@@ -409,6 +409,77 @@ Run the test suite:
 composer test
 ```
 
+## Roadmap
+
+The following features are planned for future releases:
+
+### Queue Support
+Send notifications asynchronously using Laravel's queue system:
+
+```php
+// Coming soon
+Notify::queue('slack')->send('Processing complete!');
+Notify::later(now()->addMinutes(5), 'slack')->send('Reminder!');
+```
+
+### Schedule Support
+Schedule recurring notifications using Laravel's task scheduler:
+
+```php
+// Coming soon - In app/Console/Kernel.php
+protected function schedule(Schedule $schedule)
+{
+    $schedule->notify('Daily report generated', 'slack')
+             ->daily()
+             ->at('09:00');
+}
+```
+
+### Additional Providers
+- **SMS**: Twilio, Nexmo/Vonage
+- **Microsoft Teams**: Webhook integration
+- **PagerDuty**: Incident management alerts
+- **Webhook**: Generic HTTP webhook support
+- **Mattermost**: Team collaboration alerts
+- **Pushover**: Mobile push notifications
+
+### Retry Logic
+Automatic retry on failure with configurable attempts and backoff:
+
+```php
+// Coming soon
+Notify::provider('slack')
+    ->retry(3)
+    ->backoff(60)
+    ->send('Important message');
+```
+
+### Event System
+Listen to notification events:
+
+```php
+// Coming soon
+Event::listen(NotificationSent::class, function ($event) {
+    Log::info("Notification sent via {$event->provider}");
+});
+```
+
+### Rate Limiting
+Built-in rate limiting per provider to prevent API throttling.
+
+### Notification Templates
+Reusable notification templates:
+
+```php
+// Coming soon
+Notify::template('deployment')->send([
+    'version' => 'v2.1.0',
+    'environment' => 'production'
+]);
+```
+
+Want to contribute? Check out our [GitHub repository](https://github.com/mortogo321/laravel-notify) or open an issue to discuss new features!
+
 ## Troubleshooting
 
 ### Notification not sending
