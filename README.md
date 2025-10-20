@@ -2,26 +2,20 @@
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/mortogo321/laravel-notify.svg?style=flat-square)](https://packagist.org/packages/mortogo321/laravel-notify)
 [![Total Downloads](https://img.shields.io/packagist/dt/mortogo321/laravel-notify.svg?style=flat-square)](https://packagist.org/packages/mortogo321/laravel-notify)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/mortogo321/laravel-notify/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/mortogo321/laravel-notify/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/mortogo321/laravel-notify/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/mortogo321/laravel-notify/actions?query=workflow%3A"fix-php-code-style-issues"+branch%3Amain)
-[![License](https://img.shields.io/packagist/l/mortogo321/laravel-notify.svg?style=flat-square)](https://packagist.org/packages/mortogo321/laravel-notify)
+[![GitHub License](https://img.shields.io/github/license/mortogo321/laravel-notify.svg?style=flat-square)](https://github.com/mortogo321/laravel-notify/blob/main/LICENSE.md)
+[![PHP Version](https://img.shields.io/packagist/php-v/mortogo321/laravel-notify.svg?style=flat-square)](https://packagist.org/packages/mortogo321/laravel-notify)
 
 A flexible Laravel package for sending notifications and alerts to multiple providers including Slack, Discord, Telegram, and Email.
 
 ## Features
 
-- 🚀 Multiple notification providers (Slack, Discord, Telegram, Email)
-- 🔌 Easy provider switching
-- 📦 Simple and intuitive API
-- ⚙️ Highly configurable
-- 🎯 Send to multiple providers at once
-- 🔧 Extensible - add custom providers
-- 💪 Type-safe with modern PHP
-
-## Requirements
-
-- PHP 8.1 or higher
-- Laravel 10.x or 11.x
+- **Multiple Providers**: Support for Slack, Discord, Telegram, and Email notifications
+- **Easy Provider Switching**: Seamlessly switch between providers with a simple API
+- **Send to Multiple Providers**: Broadcast notifications to multiple providers at once
+- **Highly Configurable**: Customize each provider with extensive options
+- **Extensible Architecture**: Easily add custom notification providers
+- **Facade Support**: Clean and intuitive facade for easy integration
+- **Type-Safe**: Built with modern PHP 8.1+ features
 
 ## Installation
 
@@ -37,75 +31,48 @@ Publish the configuration file:
 php artisan vendor:publish --tag=notify-config
 ```
 
-## Quick Start
-
-### 1. Setup Slack Webhook
-
-1. Go to https://api.slack.com/apps
-2. Create a new app or select an existing one
-3. Navigate to "Incoming Webhooks" and activate it
-4. Click "Add New Webhook to Workspace"
-5. Select a channel and authorize
-6. Copy the webhook URL
-
-### 2. Setup Discord Webhook
-
-1. Open your Discord server
-2. Go to Server Settings > Integrations
-3. Click "Webhooks" > "New Webhook"
-4. Choose a channel and customize the webhook name/avatar
-5. Click "Copy Webhook URL"
-
-### 3. Setup Telegram Bot
-
-1. Open Telegram and search for `@BotFather`
-2. Send `/newbot` and follow instructions to create your bot
-3. Copy the bot token provided
-4. Send a message to your bot
-5. Visit `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates` in your browser
-6. Find the `chat.id` value in the response
-
 ## Configuration
 
-After publishing, configure your providers in `config/notify.php` or use environment variables in your `.env` file:
-
-### Slack Configuration
+Add your notification provider credentials to your `.env` file:
 
 ```env
 NOTIFY_DEFAULT_PROVIDER=slack
+
+# Slack Configuration
 NOTIFY_SLACK_ENABLED=true
 NOTIFY_SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
 NOTIFY_SLACK_USERNAME="Laravel Notify"
 NOTIFY_SLACK_ICON=:bell:
 NOTIFY_SLACK_CHANNEL=#general
-```
 
-### Discord Configuration
-
-```env
+# Discord Configuration
 NOTIFY_DISCORD_ENABLED=true
 NOTIFY_DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/YOUR/WEBHOOK/URL
 NOTIFY_DISCORD_USERNAME="Laravel Notify"
-```
 
-### Telegram Configuration
-
-```env
+# Telegram Configuration
 NOTIFY_TELEGRAM_ENABLED=true
 NOTIFY_TELEGRAM_BOT_TOKEN=your-bot-token
 NOTIFY_TELEGRAM_CHAT_ID=your-chat-id
 NOTIFY_TELEGRAM_PARSE_MODE=HTML
-```
 
-### Email Configuration
-
-```env
+# Email Configuration
 NOTIFY_EMAIL_ENABLED=true
 NOTIFY_EMAIL_TO=admin@example.com
 NOTIFY_EMAIL_FROM=noreply@example.com
 NOTIFY_EMAIL_FROM_NAME="Laravel Notify"
 NOTIFY_EMAIL_SUBJECT="Laravel Notification"
 ```
+
+### Getting Provider Credentials
+
+**Slack**: Get your webhook URL from https://api.slack.com/apps (Incoming Webhooks)
+
+**Discord**: Server Settings > Integrations > Webhooks > New Webhook
+
+**Telegram**: Message `@BotFather` on Telegram, create a bot, then get your chat ID from `https://api.telegram.org/bot<TOKEN>/getUpdates`
+
+**Email**: Uses Laravel's built-in mail system (configure in `config/mail.php`)
 
 ## Usage
 
@@ -398,44 +365,85 @@ notify('Hello Slack!', 'slack');
 notify('Hello Discord!', 'discord', ['username' => 'Custom Bot']);
 ```
 
-## Available Methods
+## API Reference
 
-### NotifyManager
+### NotifyManager Methods
 
-- `provider(?string $provider = null)` - Get a specific provider instance
-- `send(string $message, array $options = [])` - Send using default provider
-- `sendToMultiple(array $providers, string $message, array $options = [])` - Send to multiple providers
-- `extend(string $name, NotificationProvider $provider)` - Register custom provider
-- `getProviders()` - Get list of registered providers
+```php
+// Get a specific provider instance
+$provider = Notify::provider('slack');
 
-### All Providers
+// Send using default provider
+Notify::send(string $message, array $options = []): mixed;
 
-- `send(string $message, array $options = [])` - Send notification
-- `getName()` - Get provider name
-- `isEnabled()` - Check if provider is enabled
+// Send to multiple providers
+Notify::sendToMultiple(array $providers, string $message, array $options = []): array;
+
+// Register a custom provider
+Notify::extend(string $name, NotificationProvider $provider): void;
+
+// Get list of registered providers
+Notify::getProviders(): array;
+```
+
+### Provider Methods
+
+All providers implement the following methods:
+
+```php
+// Send notification
+$provider->send(string $message, array $options = []): mixed;
+
+// Get provider name
+$provider->getName(): string;
+
+// Check if provider is enabled
+$provider->isEnabled(): bool;
+```
 
 ## Testing
+
+Run the test suite:
 
 ```bash
 composer test
 ```
 
+## Troubleshooting
+
+### Notification not sending
+
+- Verify your provider credentials in `.env`
+- Check that the provider is enabled (`NOTIFY_*_ENABLED=true`)
+- Ensure the webhook URL or API credentials are correct
+- Check logs for detailed error messages
+
+### Provider not found error
+
+- Ensure the provider is configured in `config/notify.php`
+- Verify the provider name matches exactly (e.g., 'slack', not 'Slack')
+- Check that a default provider is set if not specifying one
+
+## Security
+
+- Never expose webhook URLs or API tokens in client-side code
+- Store all credentials in `.env` file (never commit to version control)
+- Use environment-specific credentials for different environments
+- Consider rate limiting for production use
+
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
 
-## Contributing
+## License
 
-Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
-
-## Security
-
-If you discover any security-related issues, please email the maintainer instead of using the issue tracker.
+MIT License. Please see [License File](LICENSE.md) for more information.
 
 ## Credits
 
 - [Mor](https://github.com/mortogo321)
+- All contributors
 
-## License
+## Support
 
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+For issues, questions, or contributions, please visit the [GitHub repository](https://github.com/mortogo321/laravel-notify).
