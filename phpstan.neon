@@ -6,7 +6,11 @@ parameters:
     paths:
         - src
     tmpDir: build/phpstan
-    checkMissingIterableValueType: false
-    checkGenericClassInNonGenericObjectType: false
+    reportUnmatchedIgnoredErrors: false
     ignoreErrors:
-        - '#Call to an undefined method Illuminate\\Mail\\PendingMail::#'
+        -
+            identifier: missingType.iterableValue
+        -
+            identifier: missingType.generics
+        -
+            identifier: new.static

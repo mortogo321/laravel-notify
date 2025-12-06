@@ -1,8 +1,10 @@
 /vendor/
+/build/
 composer.lock
 composer.phar
 phpunit.xml
 .phpunit.result.cache
+.phpunit.cache
 .DS_Store
 Thumbs.db
 .idea

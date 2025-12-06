@@ -21,7 +21,7 @@ A flexible Laravel package for sending notifications and alerts to multiple prov
 
 ## Requirements
 
-- PHP 8.1+
+- PHP 8.1, 8.2, 8.3, or 8.4
 - Laravel 10.x or 11.x
 
 ## Installation
