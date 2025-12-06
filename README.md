@@ -1,6 +1,7 @@
 # Laravel Notify
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/mortogo321/laravel-notify.svg?style=flat-square)](https://packagist.org/packages/mortogo321/laravel-notify)
+[![Tests](https://github.com/mortogo321/laravel-notify/actions/workflows/tests.yml/badge.svg)](https://github.com/mortogo321/laravel-notify/actions/workflows/tests.yml)
 [![Total Downloads](https://img.shields.io/packagist/dt/mortogo321/laravel-notify.svg?style=flat-square)](https://packagist.org/packages/mortogo321/laravel-notify)
 [![GitHub License](https://img.shields.io/github/license/mortogo321/laravel-notify.svg?style=flat-square)](https://github.com/mortogo321/laravel-notify/blob/main/LICENSE.md)
 [![PHP Version](https://img.shields.io/packagist/php-v/mortogo321/laravel-notify.svg?style=flat-square)](https://packagist.org/packages/mortogo321/laravel-notify)
@@ -12,10 +13,16 @@ A flexible Laravel package for sending notifications and alerts to multiple prov
 - **Multiple Providers**: Support for Slack, Discord, Telegram, and Email notifications
 - **Easy Provider Switching**: Seamlessly switch between providers with a simple API
 - **Send to Multiple Providers**: Broadcast notifications to multiple providers at once
+- **Channel/Group Helpers**: Built-in methods to list channels, get chat IDs, and more
 - **Highly Configurable**: Customize each provider with extensive options
 - **Extensible Architecture**: Easily add custom notification providers
 - **Facade Support**: Clean and intuitive facade for easy integration
-- **Type-Safe**: Built with modern PHP 8.1+ features
+- **Type-Safe**: Built with modern PHP 8.1+ strict types
+
+## Requirements
+
+- PHP 8.1+
+- Laravel 10.x or 11.x
 
 ## Installation
 
@@ -70,7 +77,7 @@ NOTIFY_EMAIL_SUBJECT="Laravel Notification"
 
 **Discord**: Server Settings > Integrations > Webhooks > New Webhook
 
-**Telegram**: Message `@BotFather` on Telegram, create a bot, then get your chat ID from `https://api.telegram.org/bot<TOKEN>/getUpdates`
+**Telegram**: Message `@BotFather` on Telegram, create a bot, then use the helper methods below to get your chat ID
 
 **Email**: Uses Laravel's built-in mail system (configure in `config/mail.php`)
 
@@ -103,9 +110,210 @@ Notify::provider('telegram')->send('Server CPU usage is high!');
 Notify::provider('email')->send('Monthly report is ready.');
 ```
 
-### Advanced Options
+### Send to Multiple Providers
 
-#### Slack with Attachments
+```php
+$result = Notify::sendToMultiple(
+    ['slack', 'discord', 'telegram'],
+    'Critical: Database backup failed!'
+);
+
+// Returns an array with results from each provider
+// [
+//     'slack' => ['success' => true, ...],
+//     'discord' => ['success' => true, ...],
+//     'telegram' => ['success' => false, 'error' => '...']
+// ]
+```
+
+### Provider Management
+
+```php
+// Check if provider exists
+if (Notify::hasProvider('slack')) {
+    Notify::provider('slack')->send('Hello!');
+}
+
+// Get all registered providers
+$providers = Notify::getProviders(); // ['slack', 'discord', 'telegram', 'email']
+
+// Get/set default provider
+$default = Notify::getDefaultProvider(); // 'slack'
+Notify::setDefaultProvider('discord');
+
+// Get configuration
+$config = Notify::getConfig(); // All config
+$default = Notify::getConfig('default'); // 'slack'
+```
+
+## Channel & Group ID Helpers
+
+Each provider includes helper methods to retrieve channel IDs, group IDs, and other useful information.
+
+### Slack Helpers
+
+```php
+$slack = Notify::provider('slack');
+
+// Get configured settings
+$channel = $slack->getChannel();           // '#general'
+$username = $slack->getUsername();         // 'Laravel Notify'
+$icon = $slack->getIconEmoji();           // ':bell:'
+$webhookUrl = $slack->getWebhookUrl();    // Masked URL for security
+
+// List channels (requires bot token with channels:read scope)
+$result = $slack->listChannels('xoxb-your-bot-token');
+// [
+//     'success' => true,
+//     'channels' => [
+//         ['id' => 'C1234567890', 'name' => 'general', 'is_private' => false, 'num_members' => 50],
+//         ['id' => 'C0987654321', 'name' => 'dev-team', 'is_private' => true, 'num_members' => 10],
+//     ],
+//     'next_cursor' => '...'
+// ]
+
+// Get channel info by ID
+$result = $slack->getChannelInfo('xoxb-your-bot-token', 'C1234567890');
+// ['success' => true, 'channel' => [...]]
+```
+
+### Discord Helpers
+
+```php
+$discord = Notify::provider('discord');
+
+// Get configured settings
+$username = $discord->getUsername();       // 'Laravel Notify'
+$avatarUrl = $discord->getAvatarUrl();    // Avatar URL
+$webhookUrl = $discord->getWebhookUrl();  // Masked URL for security
+$webhookId = $discord->getWebhookId();    // '123456789012345678'
+
+// Get webhook info (channel ID, guild ID, etc.)
+$info = $discord->getWebhookInfo();
+// [
+//     'success' => true,
+//     'webhook' => [
+//         'id' => '123456789012345678',
+//         'name' => 'Laravel Notify',
+//         'channel_id' => '987654321098765432',
+//         'guild_id' => '111222333444555666',
+//         'avatar' => '...'
+//     ]
+// ]
+
+// Shorthand methods
+$channelId = $discord->getChannelId();    // '987654321098765432'
+$guildId = $discord->getGuildId();        // '111222333444555666'
+
+// List guild channels (requires bot token)
+$result = $discord->listGuildChannels('your-bot-token', $guildId);
+// [
+//     'success' => true,
+//     'channels' => [
+//         ['id' => '...', 'name' => 'general', 'type' => 0, 'position' => 0],
+//         ['id' => '...', 'name' => 'announcements', 'type' => 0, 'position' => 1],
+//     ]
+// ]
+```
+
+### Telegram Helpers
+
+```php
+$telegram = Notify::provider('telegram');
+
+// Get configured settings
+$chatId = $telegram->getChatId();         // '-1001234567890'
+$botToken = $telegram->getBotToken();     // Masked token for security
+$parseMode = $telegram->getParseMode();   // 'HTML'
+
+// Get bot info
+$bot = $telegram->getMe();
+// [
+//     'success' => true,
+//     'bot' => [
+//         'id' => 123456789,
+//         'first_name' => 'My Bot',
+//         'username' => 'my_bot',
+//         'can_join_groups' => true,
+//         ...
+//     ]
+// ]
+
+// Get chat info
+$chat = $telegram->getChat();  // Uses configured chat_id
+$chat = $telegram->getChat('-1009876543210');  // Or specify a different chat
+// [
+//     'success' => true,
+//     'chat' => [
+//         'id' => -1001234567890,
+//         'type' => 'supergroup',
+//         'title' => 'My Group',
+//         ...
+//     ]
+// ]
+
+// Get recent updates to find chat IDs
+// First, send a message to your bot, then call:
+$updates = $telegram->getUpdates();
+// [
+//     'success' => true,
+//     'updates' => [...],
+//     'chats' => [
+//         ['id' => 123456789, 'type' => 'private', 'first_name' => 'John', 'username' => 'john_doe'],
+//         ['id' => -1001234567890, 'type' => 'supergroup', 'title' => 'My Group'],
+//     ]
+// ]
+
+// Get chat member count
+$count = $telegram->getChatMemberCount();
+// ['success' => true, 'count' => 150]
+
+// Get chat administrators
+$admins = $telegram->getChatAdministrators();
+// ['success' => true, 'administrators' => [...]]
+
+// Webhook management
+$telegram->setWebhook('https://your-domain.com/webhook', [
+    'secret_token' => 'your-secret',
+    'allowed_updates' => ['message', 'callback_query'],
+]);
+$telegram->deleteWebhook();
+$webhookInfo = $telegram->getWebhookInfo();
+```
+
+### Email Helpers
+
+```php
+$email = Notify::provider('email');
+
+// Get configured settings
+$to = $email->getTo();                    // 'admin@example.com'
+$from = $email->getFrom();                // 'noreply@example.com'
+$fromName = $email->getFromName();        // 'Laravel Notify'
+$subject = $email->getSubject();          // 'Laravel Notification'
+$cc = $email->getCc();                    // CC recipients
+$bcc = $email->getBcc();                  // BCC recipients
+
+// Validate email addresses
+$isValid = $email->validateEmail('test@example.com');  // true
+$isValid = $email->validateEmail('invalid-email');     // false
+
+// Validate multiple emails
+$result = $email->validateEmails([
+    'valid@example.com',
+    'also-valid@test.com',
+    'invalid-email',
+    'bad@',
+]);
+// [
+//     'valid' => ['valid@example.com', 'also-valid@test.com'],
+//     'invalid' => ['invalid-email', 'bad@']
+// ]
+```
+
+## Advanced Options
+
+### Slack with Attachments
 
 ```php
 Notify::provider('slack')->send('Check out this info:', [
@@ -134,7 +342,7 @@ Notify::provider('slack')->send('Check out this info:', [
 ]);
 ```
 
-#### Slack with Block Kit
+### Slack with Block Kit
 
 ```php
 Notify::provider('slack')->send('', [
@@ -166,7 +374,7 @@ Notify::provider('slack')->send('', [
 ]);
 ```
 
-#### Discord with Embeds
+### Discord with Embeds
 
 ```php
 Notify::provider('discord')->send('New deployment!', [
@@ -194,7 +402,7 @@ Notify::provider('discord')->send('New deployment!', [
 ]);
 ```
 
-#### Telegram with Custom Options
+### Telegram with Custom Options
 
 ```php
 Notify::provider('telegram')->send('<b>Alert!</b> Server CPU usage is at 90%', [
@@ -210,34 +418,20 @@ Notify::provider('telegram')->send('<b>Alert!</b> Server CPU usage is at 90%', [
 ]);
 ```
 
-#### Email with Custom Recipients
+### Email with CC/BCC
 
 ```php
 Notify::provider('email')->send('<h1>Monthly Report</h1><p>Your report is ready!</p>', [
-    'to' => 'custom@example.com',
+    'to' => 'user@example.com',
     'subject' => 'Your Monthly Report',
     'from' => 'reports@example.com',
-    'from_name' => 'Report System'
+    'from_name' => 'Report System',
+    'cc' => 'manager@example.com',
+    'bcc' => 'archive@example.com',
 ]);
 ```
 
-### Send to Multiple Providers
-
-```php
-$result = Notify::sendToMultiple(
-    ['slack', 'discord', 'telegram'],
-    'Critical: Database backup failed!'
-);
-
-// Returns an array with results from each provider
-// [
-//     'slack' => ['success' => true, ...],
-//     'discord' => ['success' => true, ...],
-//     'telegram' => ['success' => false, 'error' => '...']
-// ]
-```
-
-### Using in Controllers
+## Using in Controllers
 
 ```php
 <?php
@@ -245,6 +439,7 @@ $result = Notify::sendToMultiple(
 namespace App\Http\Controllers;
 
 use Mortogo321\LaravelNotify\Facades\Notify;
+use Mortogo321\LaravelNotify\Exceptions\NotificationException;
 
 class DeploymentController extends Controller
 {
@@ -253,7 +448,6 @@ class DeploymentController extends Controller
         // Your deployment logic...
 
         try {
-            // Notify about successful deployment
             Notify::provider('slack')->send('Deployment completed successfully!', [
                 'attachments' => [
                     [
@@ -263,9 +457,11 @@ class DeploymentController extends Controller
                     ]
                 ]
             ]);
-        } catch (\Exception $e) {
-            // Handle notification error
-            logger()->error('Failed to send notification: ' . $e->getMessage());
+        } catch (NotificationException $e) {
+            logger()->error('Failed to send notification: ' . $e->getMessage(), [
+                'provider' => $e->getProvider(),
+                'context' => $e->getContext(),
+            ]);
         }
 
         return response()->json(['status' => 'success']);
@@ -273,7 +469,7 @@ class DeploymentController extends Controller
 }
 ```
 
-### Using in Jobs
+## Using in Jobs
 
 ```php
 <?php
@@ -295,13 +491,11 @@ class ProcessDataJob implements ShouldQueue
     {
         // Process data...
 
-        // Notify when complete
         Notify::send('Data processing completed!');
     }
 
     public function failed(\Throwable $exception): void
     {
-        // Notify on failure
         Notify::provider('slack')->send('Job failed: ' . $exception->getMessage(), [
             'attachments' => [
                 [
@@ -315,7 +509,7 @@ class ProcessDataJob implements ShouldQueue
 }
 ```
 
-### Custom Providers
+## Custom Providers
 
 You can extend the package with custom providers:
 
@@ -327,25 +521,39 @@ class CustomProvider extends AbstractProvider
 {
     protected string $name = 'custom';
 
-    public function send(string $message, array $options = []): mixed
+    public function __construct(array $config = [])
     {
+        parent::__construct($config);
+        $this->validateConfig(['api_key']);
+    }
+
+    public function send(string $message, array $options = []): array
+    {
+        if (! $this->isEnabled()) {
+            return $this->disabledResponse();
+        }
+
         // Your custom implementation
-        return ['success' => true];
+        return $this->post('https://api.custom-service.com/send', [
+            'message' => $message,
+            'api_key' => $this->getConfig('api_key'),
+        ]);
     }
 }
 
 // Register the custom provider
 Notify::extend('custom', new CustomProvider([
-    'api_key' => 'your-api-key'
+    'enabled' => true,
+    'api_key' => 'your-api-key',
 ]));
 
 // Use it
 Notify::provider('custom')->send('Hello from custom provider!');
 ```
 
-### Helper Functions
+## Helper Functions
 
-You can also create a helper function in your `app/helpers.php`:
+You can create a helper function in your `app/helpers.php`:
 
 ```php
 if (!function_exists('notify')) {
@@ -369,37 +577,79 @@ notify('Hello Discord!', 'discord', ['username' => 'Custom Bot']);
 
 ### NotifyManager Methods
 
-```php
-// Get a specific provider instance
-$provider = Notify::provider('slack');
-
-// Send using default provider
-Notify::send(string $message, array $options = []): mixed;
-
-// Send to multiple providers
-Notify::sendToMultiple(array $providers, string $message, array $options = []): array;
-
-// Register a custom provider
-Notify::extend(string $name, NotificationProvider $provider): void;
-
-// Get list of registered providers
-Notify::getProviders(): array;
-```
+| Method | Description |
+|--------|-------------|
+| `provider(?string $name)` | Get a specific provider instance |
+| `send(string $message, array $options = [])` | Send using default provider |
+| `sendToMultiple(array $providers, string $message, array $options = [])` | Send to multiple providers |
+| `extend(string $name, NotificationProvider $provider)` | Register a custom provider |
+| `getProviders()` | Get list of registered provider names |
+| `hasProvider(string $name)` | Check if provider is registered |
+| `getDefaultProvider()` | Get the default provider name |
+| `setDefaultProvider(string $name)` | Set the default provider |
+| `getConfig(?string $key, mixed $default = null)` | Get configuration value(s) |
 
 ### Provider Methods
 
-All providers implement the following methods:
+All providers implement these methods:
 
-```php
-// Send notification
-$provider->send(string $message, array $options = []): mixed;
+| Method | Description |
+|--------|-------------|
+| `send(string $message, array $options = [])` | Send notification |
+| `getName()` | Get provider name |
+| `isEnabled()` | Check if provider is enabled |
+| `getAllConfig()` | Get all configuration values |
 
-// Get provider name
-$provider->getName(): string;
+### Provider-Specific Helpers
 
-// Check if provider is enabled
-$provider->isEnabled(): bool;
-```
+#### Slack
+| Method | Description |
+|--------|-------------|
+| `getChannel()` | Get configured channel |
+| `getUsername()` | Get configured username |
+| `getIconEmoji()` | Get configured icon emoji |
+| `getWebhookUrl()` | Get masked webhook URL |
+| `listChannels(string $botToken, array $options = [])` | List available channels |
+| `getChannelInfo(string $botToken, string $channelId)` | Get channel info |
+
+#### Discord
+| Method | Description |
+|--------|-------------|
+| `getUsername()` | Get configured username |
+| `getAvatarUrl()` | Get configured avatar URL |
+| `getWebhookUrl()` | Get masked webhook URL |
+| `getWebhookId()` | Extract webhook ID from URL |
+| `getWebhookInfo()` | Get webhook details from Discord |
+| `getChannelId()` | Get channel ID from webhook |
+| `getGuildId()` | Get guild (server) ID from webhook |
+| `listGuildChannels(string $botToken, string $guildId)` | List guild channels |
+
+#### Telegram
+| Method | Description |
+|--------|-------------|
+| `getChatId()` | Get configured chat ID |
+| `getBotToken()` | Get masked bot token |
+| `getParseMode()` | Get configured parse mode |
+| `getMe()` | Get bot information |
+| `getChat(?string $chatId)` | Get chat information |
+| `getUpdates(array $options = [])` | Get updates with chat IDs |
+| `getChatAdministrators(?string $chatId)` | Get chat administrators |
+| `getChatMemberCount(?string $chatId)` | Get chat member count |
+| `setWebhook(string $url, array $options = [])` | Set webhook URL |
+| `deleteWebhook()` | Delete webhook |
+| `getWebhookInfo()` | Get webhook info |
+
+#### Email
+| Method | Description |
+|--------|-------------|
+| `getTo()` | Get configured recipient(s) |
+| `getFrom()` | Get configured sender |
+| `getFromName()` | Get configured sender name |
+| `getSubject()` | Get configured subject |
+| `getCc()` | Get configured CC recipients |
+| `getBcc()` | Get configured BCC recipients |
+| `validateEmail(string $email)` | Validate an email address |
+| `validateEmails(array $emails)` | Validate multiple emails |
 
 ## Testing
 
@@ -409,76 +659,30 @@ Run the test suite:
 composer test
 ```
 
+Run code quality checks:
+
+```bash
+# Code style (Laravel Pint)
+composer pint
+
+# Static analysis (PHPStan)
+composer stan
+
+# All quality checks
+composer quality
+```
+
 ## Roadmap
 
 The following features are planned for future releases:
 
-### Queue Support
-Send notifications asynchronously using Laravel's queue system:
-
-```php
-// Coming soon
-Notify::queue('slack')->send('Processing complete!');
-Notify::later(now()->addMinutes(5), 'slack')->send('Reminder!');
-```
-
-### Schedule Support
-Schedule recurring notifications using Laravel's task scheduler:
-
-```php
-// Coming soon - In app/Console/Kernel.php
-protected function schedule(Schedule $schedule)
-{
-    $schedule->notify('Daily report generated', 'slack')
-             ->daily()
-             ->at('09:00');
-}
-```
-
-### Additional Providers
-- **SMS**: Twilio, Nexmo/Vonage
-- **Microsoft Teams**: Webhook integration
-- **PagerDuty**: Incident management alerts
-- **Webhook**: Generic HTTP webhook support
-- **Mattermost**: Team collaboration alerts
-- **Pushover**: Mobile push notifications
-
-### Retry Logic
-Automatic retry on failure with configurable attempts and backoff:
-
-```php
-// Coming soon
-Notify::provider('slack')
-    ->retry(3)
-    ->backoff(60)
-    ->send('Important message');
-```
-
-### Event System
-Listen to notification events:
-
-```php
-// Coming soon
-Event::listen(NotificationSent::class, function ($event) {
-    Log::info("Notification sent via {$event->provider}");
-});
-```
-
-### Rate Limiting
-Built-in rate limiting per provider to prevent API throttling.
-
-### Notification Templates
-Reusable notification templates:
-
-```php
-// Coming soon
-Notify::template('deployment')->send([
-    'version' => 'v2.1.0',
-    'environment' => 'production'
-]);
-```
-
-Want to contribute? Check out our [GitHub repository](https://github.com/mortogo321/laravel-notify) or open an issue to discuss new features!
+- **Queue Support**: Send notifications asynchronously
+- **Schedule Support**: Schedule recurring notifications
+- **Additional Providers**: SMS (Twilio), Microsoft Teams, PagerDuty, Webhook
+- **Retry Logic**: Automatic retry with exponential backoff
+- **Event System**: Listen to notification events
+- **Rate Limiting**: Built-in rate limiting per provider
+- **Notification Templates**: Reusable message templates
 
 ## Troubleshooting
 
@@ -495,12 +699,20 @@ Want to contribute? Check out our [GitHub repository](https://github.com/mortogo
 - Verify the provider name matches exactly (e.g., 'slack', not 'Slack')
 - Check that a default provider is set if not specifying one
 
+### Getting Telegram Chat ID
+
+1. Create a bot via @BotFather
+2. Add the bot to your group/channel
+3. Send a message to the group
+4. Use the helper: `Notify::provider('telegram')->getUpdates()`
+5. Find your chat ID in the `chats` array
+
 ## Security
 
 - Never expose webhook URLs or API tokens in client-side code
 - Store all credentials in `.env` file (never commit to version control)
 - Use environment-specific credentials for different environments
-- Consider rate limiting for production use
+- Helper methods return masked tokens/URLs for safe logging
 
 ## Changelog
 

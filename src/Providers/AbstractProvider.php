@@ -1,17 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mortogo321\LaravelNotify\Providers;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Mortogo321\LaravelNotify\Contracts\NotificationProvider;
 use Mortogo321\LaravelNotify\Exceptions\NotificationException;
 
 abstract class AbstractProvider implements NotificationProvider
 {
     protected Client $client;
+
+    /**
+     * @var array<string, mixed>
+     */
     protected array $config;
+
     protected string $name;
 
+    /**
+     * Create a new provider instance.
+     *
+     * @param array<string, mixed> $config
+     */
     public function __construct(array $config = [])
     {
         $this->config = $config;
@@ -38,7 +51,7 @@ abstract class AbstractProvider implements NotificationProvider
      */
     public function isEnabled(): bool
     {
-        return $this->config['enabled'] ?? true;
+        return (bool) ($this->config['enabled'] ?? true);
     }
 
     /**
@@ -54,9 +67,19 @@ abstract class AbstractProvider implements NotificationProvider
     }
 
     /**
+     * Get all configuration values.
+     *
+     * @return array<string, mixed>
+     */
+    public function getAllConfig(): array
+    {
+        return $this->config;
+    }
+
+    /**
      * Validate required configuration keys.
      *
-     * @param array $keys
+     * @param array<int, string> $keys
      * @return void
      * @throws NotificationException
      */
@@ -64,10 +87,61 @@ abstract class AbstractProvider implements NotificationProvider
     {
         foreach ($keys as $key) {
             if (empty($this->config[$key])) {
-                throw new NotificationException(
-                    "Missing required configuration key: {$key} for {$this->name} provider"
-                );
+                throw NotificationException::missingConfig($this->name, $key);
             }
+        }
+    }
+
+    /**
+     * Build a disabled response.
+     *
+     * @return array{success: bool, message: string}
+     */
+    protected function disabledResponse(): array
+    {
+        return [
+            'success' => false,
+            'message' => "Provider [{$this->name}] is disabled",
+        ];
+    }
+
+    /**
+     * Handle a Guzzle exception.
+     *
+     * @param GuzzleException $e
+     * @return never
+     * @throws NotificationException
+     */
+    protected function handleGuzzleException(GuzzleException $e): never
+    {
+        throw NotificationException::sendFailed($this->name, $e->getMessage(), $e);
+    }
+
+    /**
+     * Make an HTTP POST request.
+     *
+     * @param string $url
+     * @param array<string, mixed> $payload
+     * @return array{success: bool, status_code: int, response: mixed}
+     * @throws NotificationException
+     */
+    protected function post(string $url, array $payload): array
+    {
+        try {
+            $response = $this->client->post($url, [
+                'json' => array_filter($payload, fn($value) => $value !== null),
+            ]);
+
+            $body = (string) $response->getBody();
+            $decoded = json_decode($body, true);
+
+            return [
+                'success' => true,
+                'status_code' => $response->getStatusCode(),
+                'response' => $decoded ?? $body,
+            ];
+        } catch (GuzzleException $e) {
+            $this->handleGuzzleException($e);
         }
     }
 }

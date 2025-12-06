@@ -1,20 +1,54 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mortogo321\LaravelNotify;
 
 use Mortogo321\LaravelNotify\Contracts\NotificationProvider;
 use Mortogo321\LaravelNotify\Exceptions\ProviderNotFoundException;
-use Mortogo321\LaravelNotify\Providers\SlackProvider;
 use Mortogo321\LaravelNotify\Providers\DiscordProvider;
-use Mortogo321\LaravelNotify\Providers\TelegramProvider;
 use Mortogo321\LaravelNotify\Providers\EmailProvider;
+use Mortogo321\LaravelNotify\Providers\SlackProvider;
+use Mortogo321\LaravelNotify\Providers\TelegramProvider;
 
 class NotifyManager
 {
+    /**
+     * Registered providers.
+     *
+     * @var array<string, NotificationProvider>
+     */
     protected array $providers = [];
+
+    /**
+     * Configuration array.
+     *
+     * @var array<string, mixed>
+     */
     protected array $config;
+
+    /**
+     * Default provider name.
+     */
     protected ?string $defaultProvider = null;
 
+    /**
+     * Provider class mapping.
+     *
+     * @var array<string, class-string<NotificationProvider>>
+     */
+    protected array $providerClasses = [
+        'slack' => SlackProvider::class,
+        'discord' => DiscordProvider::class,
+        'telegram' => TelegramProvider::class,
+        'email' => EmailProvider::class,
+    ];
+
+    /**
+     * Create a new NotifyManager instance.
+     *
+     * @param array<string, mixed> $config
+     */
     public function __construct(array $config = [])
     {
         $this->config = $config;
@@ -29,14 +63,7 @@ class NotifyManager
      */
     protected function registerProviders(): void
     {
-        $providerClasses = [
-            'slack' => SlackProvider::class,
-            'discord' => DiscordProvider::class,
-            'telegram' => TelegramProvider::class,
-            'email' => EmailProvider::class,
-        ];
-
-        foreach ($providerClasses as $name => $class) {
+        foreach ($this->providerClasses as $name => $class) {
             if (isset($this->config['providers'][$name])) {
                 $this->providers[$name] = new $class($this->config['providers'][$name]);
             }
@@ -44,7 +71,7 @@ class NotifyManager
     }
 
     /**
-     * Send notification using specific provider.
+     * Get a specific provider instance.
      *
      * @param string|null $provider
      * @return NotificationProvider
@@ -54,12 +81,12 @@ class NotifyManager
     {
         $provider = $provider ?? $this->defaultProvider;
 
-        if (!$provider) {
-            throw new ProviderNotFoundException('No provider specified and no default provider set');
+        if (! $provider) {
+            throw ProviderNotFoundException::noDefault();
         }
 
-        if (!isset($this->providers[$provider])) {
-            throw new ProviderNotFoundException("Provider [{$provider}] not found or not configured");
+        if (! isset($this->providers[$provider])) {
+            throw ProviderNotFoundException::make($provider);
         }
 
         return $this->providers[$provider];
@@ -69,10 +96,11 @@ class NotifyManager
      * Send notification using default provider.
      *
      * @param string $message
-     * @param array $options
-     * @return mixed
+     * @param array<string, mixed> $options
+     * @return array{success: bool, message?: string, status_code?: int, response?: mixed}
+     * @throws ProviderNotFoundException
      */
-    public function send(string $message, array $options = []): mixed
+    public function send(string $message, array $options = []): array
     {
         return $this->provider()->send($message, $options);
     }
@@ -80,10 +108,10 @@ class NotifyManager
     /**
      * Send notification to multiple providers.
      *
-     * @param array $providers
+     * @param array<int, string> $providers
      * @param string $message
-     * @param array $options
-     * @return array
+     * @param array<string, mixed> $options
+     * @return array<string, array{success: bool, message?: string, status_code?: int, response?: mixed, error?: string}>
      */
     public function sendToMultiple(array $providers, string $message, array $options = []): array
     {
@@ -116,9 +144,9 @@ class NotifyManager
     }
 
     /**
-     * Get all registered providers.
+     * Get all registered provider names.
      *
-     * @return array
+     * @return array<int, string>
      */
     public function getProviders(): array
     {
@@ -126,13 +154,67 @@ class NotifyManager
     }
 
     /**
+     * Check if a provider is registered.
+     *
+     * @param string $name
+     * @return bool
+     */
+    public function hasProvider(string $name): bool
+    {
+        return isset($this->providers[$name]);
+    }
+
+    /**
+     * Get the default provider name.
+     *
+     * @return string|null
+     */
+    public function getDefaultProvider(): ?string
+    {
+        return $this->defaultProvider;
+    }
+
+    /**
+     * Set the default provider.
+     *
+     * @param string $provider
+     * @return void
+     * @throws ProviderNotFoundException
+     */
+    public function setDefaultProvider(string $provider): void
+    {
+        if (! isset($this->providers[$provider])) {
+            throw ProviderNotFoundException::make($provider);
+        }
+
+        $this->defaultProvider = $provider;
+    }
+
+    /**
+     * Get configuration value.
+     *
+     * @param string|null $key
+     * @param mixed $default
+     * @return mixed
+     */
+    public function getConfig(?string $key = null, mixed $default = null): mixed
+    {
+        if ($key === null) {
+            return $this->config;
+        }
+
+        return $this->config[$key] ?? $default;
+    }
+
+    /**
      * Magic method to call provider methods.
      *
      * @param string $method
-     * @param array $parameters
+     * @param array<int, mixed> $parameters
      * @return mixed
+     * @throws ProviderNotFoundException
      */
-    public function __call(string $method, array $parameters)
+    public function __call(string $method, array $parameters): mixed
     {
         return $this->provider()->$method(...$parameters);
     }

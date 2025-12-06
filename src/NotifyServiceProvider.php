@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Mortogo321\LaravelNotify;
 
 use Illuminate\Support\ServiceProvider;
