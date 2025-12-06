@@ -14,23 +14,19 @@ interface NotificationProvider
     /**
      * Send a notification message.
      *
-     * @param string $message The message to send
-     * @param array<string, mixed> $options Additional options for the provider
+     * @param  string  $message  The message to send
+     * @param  array<string, mixed>  $options  Additional options for the provider
      * @return array{success: bool, message?: string, status_code?: int, response?: mixed}
      */
     public function send(string $message, array $options = []): array;
 
     /**
      * Get the provider name.
-     *
-     * @return string
      */
     public function getName(): string;
 
     /**
      * Check if the provider is enabled.
-     *
-     * @return bool
      */
     public function isEnabled(): bool;
 }

@@ -14,7 +14,7 @@ class SlackProvider extends AbstractProvider
     /**
      * Create a new Slack provider instance.
      *
-     * @param array<string, mixed> $config
+     * @param  array<string, mixed>  $config
      */
     public function __construct(array $config = [])
     {
@@ -25,9 +25,9 @@ class SlackProvider extends AbstractProvider
     /**
      * Send notification to Slack.
      *
-     * @param string $message
-     * @param array<string, mixed> $options
+     * @param  array<string, mixed>  $options
      * @return array{success: bool, message?: string, status_code?: int, response?: mixed}
+     *
      * @throws NotificationException
      */
     public function send(string $message, array $options = []): array
@@ -44,8 +44,7 @@ class SlackProvider extends AbstractProvider
     /**
      * Build the Slack message payload.
      *
-     * @param string $message
-     * @param array<string, mixed> $options
+     * @param  array<string, mixed>  $options
      * @return array<string, mixed>
      */
     protected function buildPayload(string $message, array $options): array
@@ -70,8 +69,6 @@ class SlackProvider extends AbstractProvider
 
     /**
      * Get the configured channel.
-     *
-     * @return string|null
      */
     public function getChannel(): ?string
     {
@@ -80,8 +77,6 @@ class SlackProvider extends AbstractProvider
 
     /**
      * Get the webhook URL (masked for security).
-     *
-     * @return string|null
      */
     public function getWebhookUrl(): ?string
     {
@@ -96,8 +91,6 @@ class SlackProvider extends AbstractProvider
 
     /**
      * Get the configured username.
-     *
-     * @return string
      */
     public function getUsername(): string
     {
@@ -106,8 +99,6 @@ class SlackProvider extends AbstractProvider
 
     /**
      * Get the configured icon emoji.
-     *
-     * @return string
      */
     public function getIconEmoji(): string
     {
@@ -118,9 +109,9 @@ class SlackProvider extends AbstractProvider
      * List available channels using Slack API.
      * Requires a bot token with channels:read scope.
      *
-     * @param string $botToken
-     * @param array<string, mixed> $options
+     * @param  array<string, mixed>  $options
      * @return array{success: bool, channels?: array<int, array{id: string, name: string}>, error?: string}
+     *
      * @throws NotificationException
      */
     public function listChannels(string $botToken, array $options = []): array
@@ -146,7 +137,7 @@ class SlackProvider extends AbstractProvider
                 ];
             }
 
-            $channels = array_map(fn($channel) => [
+            $channels = array_map(fn ($channel) => [
                 'id' => $channel['id'],
                 'name' => $channel['name'],
                 'is_private' => $channel['is_private'] ?? false,
@@ -167,9 +158,8 @@ class SlackProvider extends AbstractProvider
      * Get channel info by ID using Slack API.
      * Requires a bot token with channels:read scope.
      *
-     * @param string $botToken
-     * @param string $channelId
      * @return array{success: bool, channel?: array<string, mixed>, error?: string}
+     *
      * @throws NotificationException
      */
     public function getChannelInfo(string $botToken, string $channelId): array

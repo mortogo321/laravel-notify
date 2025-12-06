@@ -23,10 +23,6 @@ class NotificationException extends Exception
 
     /**
      * Create a new notification exception.
-     *
-     * @param string $message
-     * @param int $code
-     * @param Throwable|null $previous
      */
     public function __construct(string $message = '', int $code = 0, ?Throwable $previous = null)
     {
@@ -35,9 +31,6 @@ class NotificationException extends Exception
 
     /**
      * Set the provider that caused the exception.
-     *
-     * @param string $provider
-     * @return static
      */
     public function setProvider(string $provider): static
     {
@@ -48,8 +41,6 @@ class NotificationException extends Exception
 
     /**
      * Get the provider that caused the exception.
-     *
-     * @return string|null
      */
     public function getProvider(): ?string
     {
@@ -59,8 +50,7 @@ class NotificationException extends Exception
     /**
      * Set additional context for the exception.
      *
-     * @param array<string, mixed> $context
-     * @return static
+     * @param  array<string, mixed>  $context
      */
     public function setContext(array $context): static
     {
@@ -81,11 +71,6 @@ class NotificationException extends Exception
 
     /**
      * Create a new exception for a failed send operation.
-     *
-     * @param string $provider
-     * @param string $reason
-     * @param Throwable|null $previous
-     * @return static
      */
     public static function sendFailed(string $provider, string $reason, ?Throwable $previous = null): static
     {
@@ -100,10 +85,6 @@ class NotificationException extends Exception
 
     /**
      * Create a new exception for missing configuration.
-     *
-     * @param string $provider
-     * @param string $key
-     * @return static
      */
     public static function missingConfig(string $provider, string $key): static
     {

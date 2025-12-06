@@ -15,7 +15,7 @@ class EmailProvider extends AbstractProvider
     /**
      * Create a new Email provider instance.
      *
-     * @param array<string, mixed> $config
+     * @param  array<string, mixed>  $config
      */
     public function __construct(array $config = [])
     {
@@ -26,9 +26,9 @@ class EmailProvider extends AbstractProvider
     /**
      * Send notification via Email.
      *
-     * @param string $message
-     * @param array<string, mixed> $options
+     * @param  array<string, mixed>  $options
      * @return array{success: bool, message?: string, status_code?: int, response?: mixed}
+     *
      * @throws NotificationException
      */
     public function send(string $message, array $options = []): array
@@ -74,7 +74,7 @@ class EmailProvider extends AbstractProvider
     /**
      * Parse recipients from string or array.
      *
-     * @param string|array<int, string>|null $recipients
+     * @param  string|array<int, string>|null  $recipients
      * @return array<int, string>
      */
     protected function parseRecipients(string|array|null $recipients): array
@@ -92,8 +92,6 @@ class EmailProvider extends AbstractProvider
 
     /**
      * Get the configured recipient email.
-     *
-     * @return string|null
      */
     public function getTo(): ?string
     {
@@ -104,8 +102,6 @@ class EmailProvider extends AbstractProvider
 
     /**
      * Get the configured sender email.
-     *
-     * @return string|null
      */
     public function getFrom(): ?string
     {
@@ -114,8 +110,6 @@ class EmailProvider extends AbstractProvider
 
     /**
      * Get the configured sender name.
-     *
-     * @return string
      */
     public function getFromName(): string
     {
@@ -124,8 +118,6 @@ class EmailProvider extends AbstractProvider
 
     /**
      * Get the configured subject.
-     *
-     * @return string
      */
     public function getSubject(): string
     {
@@ -134,8 +126,6 @@ class EmailProvider extends AbstractProvider
 
     /**
      * Get the configured CC recipients.
-     *
-     * @return string|null
      */
     public function getCc(): ?string
     {
@@ -146,8 +136,6 @@ class EmailProvider extends AbstractProvider
 
     /**
      * Get the configured BCC recipients.
-     *
-     * @return string|null
      */
     public function getBcc(): ?string
     {
@@ -158,9 +146,6 @@ class EmailProvider extends AbstractProvider
 
     /**
      * Validate an email address.
-     *
-     * @param string $email
-     * @return bool
      */
     public function validateEmail(string $email): bool
     {
@@ -170,7 +155,7 @@ class EmailProvider extends AbstractProvider
     /**
      * Validate multiple email addresses.
      *
-     * @param array<int, string> $emails
+     * @param  array<int, string>  $emails
      * @return array{valid: array<int, string>, invalid: array<int, string>}
      */
     public function validateEmails(array $emails): array

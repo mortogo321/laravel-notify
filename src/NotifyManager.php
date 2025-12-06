@@ -47,7 +47,7 @@ class NotifyManager
     /**
      * Create a new NotifyManager instance.
      *
-     * @param array<string, mixed> $config
+     * @param  array<string, mixed>  $config
      */
     public function __construct(array $config = [])
     {
@@ -58,8 +58,6 @@ class NotifyManager
 
     /**
      * Register all available providers.
-     *
-     * @return void
      */
     protected function registerProviders(): void
     {
@@ -73,8 +71,6 @@ class NotifyManager
     /**
      * Get a specific provider instance.
      *
-     * @param string|null $provider
-     * @return NotificationProvider
      * @throws ProviderNotFoundException
      */
     public function provider(?string $provider = null): NotificationProvider
@@ -95,9 +91,9 @@ class NotifyManager
     /**
      * Send notification using default provider.
      *
-     * @param string $message
-     * @param array<string, mixed> $options
+     * @param  array<string, mixed>  $options
      * @return array{success: bool, message?: string, status_code?: int, response?: mixed}
+     *
      * @throws ProviderNotFoundException
      */
     public function send(string $message, array $options = []): array
@@ -108,9 +104,8 @@ class NotifyManager
     /**
      * Send notification to multiple providers.
      *
-     * @param array<int, string> $providers
-     * @param string $message
-     * @param array<string, mixed> $options
+     * @param  array<int, string>  $providers
+     * @param  array<string, mixed>  $options
      * @return array<string, array{success: bool, message?: string, status_code?: int, response?: mixed, error?: string}>
      */
     public function sendToMultiple(array $providers, string $message, array $options = []): array
@@ -133,10 +128,6 @@ class NotifyManager
 
     /**
      * Register a custom provider.
-     *
-     * @param string $name
-     * @param NotificationProvider $provider
-     * @return void
      */
     public function extend(string $name, NotificationProvider $provider): void
     {
@@ -155,9 +146,6 @@ class NotifyManager
 
     /**
      * Check if a provider is registered.
-     *
-     * @param string $name
-     * @return bool
      */
     public function hasProvider(string $name): bool
     {
@@ -166,8 +154,6 @@ class NotifyManager
 
     /**
      * Get the default provider name.
-     *
-     * @return string|null
      */
     public function getDefaultProvider(): ?string
     {
@@ -177,8 +163,6 @@ class NotifyManager
     /**
      * Set the default provider.
      *
-     * @param string $provider
-     * @return void
      * @throws ProviderNotFoundException
      */
     public function setDefaultProvider(string $provider): void
@@ -192,10 +176,6 @@ class NotifyManager
 
     /**
      * Get configuration value.
-     *
-     * @param string|null $key
-     * @param mixed $default
-     * @return mixed
      */
     public function getConfig(?string $key = null, mixed $default = null): mixed
     {
@@ -209,9 +189,8 @@ class NotifyManager
     /**
      * Magic method to call provider methods.
      *
-     * @param string $method
-     * @param array<int, mixed> $parameters
-     * @return mixed
+     * @param  array<int, mixed>  $parameters
+     *
      * @throws ProviderNotFoundException
      */
     public function __call(string $method, array $parameters): mixed

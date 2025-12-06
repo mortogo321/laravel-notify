@@ -23,7 +23,7 @@ abstract class AbstractProvider implements NotificationProvider
     /**
      * Create a new provider instance.
      *
-     * @param array<string, mixed> $config
+     * @param  array<string, mixed>  $config
      */
     public function __construct(array $config = [])
     {
@@ -36,8 +36,6 @@ abstract class AbstractProvider implements NotificationProvider
 
     /**
      * Get the provider name.
-     *
-     * @return string
      */
     public function getName(): string
     {
@@ -46,8 +44,6 @@ abstract class AbstractProvider implements NotificationProvider
 
     /**
      * Check if the provider is enabled.
-     *
-     * @return bool
      */
     public function isEnabled(): bool
     {
@@ -56,10 +52,6 @@ abstract class AbstractProvider implements NotificationProvider
 
     /**
      * Get configuration value.
-     *
-     * @param string $key
-     * @param mixed $default
-     * @return mixed
      */
     protected function getConfig(string $key, mixed $default = null): mixed
     {
@@ -79,8 +71,8 @@ abstract class AbstractProvider implements NotificationProvider
     /**
      * Validate required configuration keys.
      *
-     * @param array<int, string> $keys
-     * @return void
+     * @param  array<int, string>  $keys
+     *
      * @throws NotificationException
      */
     protected function validateConfig(array $keys): void
@@ -108,8 +100,6 @@ abstract class AbstractProvider implements NotificationProvider
     /**
      * Handle a Guzzle exception.
      *
-     * @param GuzzleException $e
-     * @return never
      * @throws NotificationException
      */
     protected function handleGuzzleException(GuzzleException $e): never
@@ -120,16 +110,16 @@ abstract class AbstractProvider implements NotificationProvider
     /**
      * Make an HTTP POST request.
      *
-     * @param string $url
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      * @return array{success: bool, status_code: int, response: mixed}
+     *
      * @throws NotificationException
      */
     protected function post(string $url, array $payload): array
     {
         try {
             $response = $this->client->post($url, [
-                'json' => array_filter($payload, fn($value) => $value !== null),
+                'json' => array_filter($payload, fn ($value) => $value !== null),
             ]);
 
             $body = (string) $response->getBody();

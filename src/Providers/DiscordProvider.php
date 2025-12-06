@@ -14,7 +14,7 @@ class DiscordProvider extends AbstractProvider
     /**
      * Create a new Discord provider instance.
      *
-     * @param array<string, mixed> $config
+     * @param  array<string, mixed>  $config
      */
     public function __construct(array $config = [])
     {
@@ -25,9 +25,9 @@ class DiscordProvider extends AbstractProvider
     /**
      * Send notification to Discord.
      *
-     * @param string $message
-     * @param array<string, mixed> $options
+     * @param  array<string, mixed>  $options
      * @return array{success: bool, message?: string, status_code?: int, response?: mixed}
+     *
      * @throws NotificationException
      */
     public function send(string $message, array $options = []): array
@@ -44,8 +44,7 @@ class DiscordProvider extends AbstractProvider
     /**
      * Build the Discord message payload.
      *
-     * @param string $message
-     * @param array<string, mixed> $options
+     * @param  array<string, mixed>  $options
      * @return array<string, mixed>
      */
     protected function buildPayload(string $message, array $options): array
@@ -69,8 +68,6 @@ class DiscordProvider extends AbstractProvider
 
     /**
      * Get the webhook URL (masked for security).
-     *
-     * @return string|null
      */
     public function getWebhookUrl(): ?string
     {
@@ -85,8 +82,6 @@ class DiscordProvider extends AbstractProvider
 
     /**
      * Get the configured username.
-     *
-     * @return string
      */
     public function getUsername(): string
     {
@@ -95,8 +90,6 @@ class DiscordProvider extends AbstractProvider
 
     /**
      * Get the configured avatar URL.
-     *
-     * @return string|null
      */
     public function getAvatarUrl(): ?string
     {
@@ -105,8 +98,6 @@ class DiscordProvider extends AbstractProvider
 
     /**
      * Extract webhook ID from the configured webhook URL.
-     *
-     * @return string|null
      */
     public function getWebhookId(): ?string
     {
@@ -123,6 +114,7 @@ class DiscordProvider extends AbstractProvider
      * Get webhook info from Discord API.
      *
      * @return array{success: bool, webhook?: array<string, mixed>, error?: string}
+     *
      * @throws NotificationException
      */
     public function getWebhookInfo(): array
@@ -150,7 +142,6 @@ class DiscordProvider extends AbstractProvider
     /**
      * Get the channel ID from webhook info.
      *
-     * @return string|null
      * @throws NotificationException
      */
     public function getChannelId(): ?string
@@ -163,7 +154,6 @@ class DiscordProvider extends AbstractProvider
     /**
      * Get the guild (server) ID from webhook info.
      *
-     * @return string|null
      * @throws NotificationException
      */
     public function getGuildId(): ?string
@@ -177,9 +167,8 @@ class DiscordProvider extends AbstractProvider
      * List guild channels using Discord Bot API.
      * Requires a bot token with proper permissions.
      *
-     * @param string $botToken
-     * @param string $guildId
      * @return array{success: bool, channels?: array<int, array<string, mixed>>, error?: string}
+     *
      * @throws NotificationException
      */
     public function listGuildChannels(string $botToken, string $guildId): array
@@ -193,7 +182,7 @@ class DiscordProvider extends AbstractProvider
 
             $result = json_decode((string) $response->getBody(), true);
 
-            $channels = array_map(fn($channel) => [
+            $channels = array_map(fn ($channel) => [
                 'id' => $channel['id'],
                 'name' => $channel['name'],
                 'type' => $channel['type'],

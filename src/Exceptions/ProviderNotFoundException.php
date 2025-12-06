@@ -15,9 +15,6 @@ class ProviderNotFoundException extends Exception
 
     /**
      * Create a new exception for a provider not found.
-     *
-     * @param string $provider
-     * @return static
      */
     public static function make(string $provider): static
     {
@@ -29,8 +26,6 @@ class ProviderNotFoundException extends Exception
 
     /**
      * Create a new exception for no default provider.
-     *
-     * @return static
      */
     public static function noDefault(): static
     {
@@ -39,8 +34,6 @@ class ProviderNotFoundException extends Exception
 
     /**
      * Get the provider that was not found.
-     *
-     * @return string|null
      */
     public function getProvider(): ?string
     {

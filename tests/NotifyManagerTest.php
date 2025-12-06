@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mortogo321\LaravelNotify\Tests;
 
-use Mortogo321\LaravelNotify\Contracts\NotificationProvider;
 use Mortogo321\LaravelNotify\Exceptions\ProviderNotFoundException;
 use Mortogo321\LaravelNotify\Facades\Notify;
 use Mortogo321\LaravelNotify\NotifyManager;
@@ -103,7 +102,8 @@ class NotifyManagerTest extends TestCase
     /** @test */
     public function it_can_extend_with_custom_provider(): void
     {
-        $customProvider = new class(['enabled' => true, 'webhook_url' => 'https://test.com']) extends SlackProvider {
+        $customProvider = new class(['enabled' => true, 'webhook_url' => 'https://test.com']) extends SlackProvider
+        {
             protected string $name = 'custom';
         };
 

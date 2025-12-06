@@ -16,7 +16,7 @@ class TelegramProvider extends AbstractProvider
     /**
      * Create a new Telegram provider instance.
      *
-     * @param array<string, mixed> $config
+     * @param  array<string, mixed>  $config
      */
     public function __construct(array $config = [])
     {
@@ -27,9 +27,9 @@ class TelegramProvider extends AbstractProvider
     /**
      * Send notification to Telegram.
      *
-     * @param string $message
-     * @param array<string, mixed> $options
+     * @param  array<string, mixed>  $options
      * @return array{success: bool, message?: string, status_code?: int, response?: mixed}
+     *
      * @throws NotificationException
      */
     public function send(string $message, array $options = []): array
@@ -47,8 +47,7 @@ class TelegramProvider extends AbstractProvider
     /**
      * Build the Telegram message payload.
      *
-     * @param string $message
-     * @param array<string, mixed> $options
+     * @param  array<string, mixed>  $options
      * @return array<string, mixed>
      */
     protected function buildPayload(string $message, array $options): array
@@ -70,9 +69,6 @@ class TelegramProvider extends AbstractProvider
 
     /**
      * Build Telegram API URL.
-     *
-     * @param string $method
-     * @return string
      */
     protected function buildApiUrl(string $method): string
     {
@@ -81,8 +77,6 @@ class TelegramProvider extends AbstractProvider
 
     /**
      * Get the configured chat ID.
-     *
-     * @return string|null
      */
     public function getChatId(): ?string
     {
@@ -91,8 +85,6 @@ class TelegramProvider extends AbstractProvider
 
     /**
      * Get the bot token (masked for security).
-     *
-     * @return string|null
      */
     public function getBotToken(): ?string
     {
@@ -107,8 +99,6 @@ class TelegramProvider extends AbstractProvider
 
     /**
      * Get the configured parse mode.
-     *
-     * @return string
      */
     public function getParseMode(): string
     {
@@ -119,6 +109,7 @@ class TelegramProvider extends AbstractProvider
      * Get bot information from Telegram API.
      *
      * @return array{success: bool, bot?: array<string, mixed>, error?: string}
+     *
      * @throws NotificationException
      */
     public function getMe(): array
@@ -147,8 +138,8 @@ class TelegramProvider extends AbstractProvider
     /**
      * Get chat information by chat ID.
      *
-     * @param string|int|null $chatId
      * @return array{success: bool, chat?: array<string, mixed>, error?: string}
+     *
      * @throws NotificationException
      */
     public function getChat(string|int|null $chatId = null): array
@@ -181,8 +172,9 @@ class TelegramProvider extends AbstractProvider
     /**
      * Get updates to find chat IDs from recent messages.
      *
-     * @param array<string, mixed> $options
+     * @param  array<string, mixed>  $options
      * @return array{success: bool, updates?: array<int, array<string, mixed>>, chats?: array<int, array<string, mixed>>, error?: string}
+     *
      * @throws NotificationException
      */
     public function getUpdates(array $options = []): array
@@ -240,8 +232,8 @@ class TelegramProvider extends AbstractProvider
     /**
      * Get chat administrators.
      *
-     * @param string|int|null $chatId
      * @return array{success: bool, administrators?: array<int, array<string, mixed>>, error?: string}
+     *
      * @throws NotificationException
      */
     public function getChatAdministrators(string|int|null $chatId = null): array
@@ -274,8 +266,8 @@ class TelegramProvider extends AbstractProvider
     /**
      * Get chat member count.
      *
-     * @param string|int|null $chatId
      * @return array{success: bool, count?: int, error?: string}
+     *
      * @throws NotificationException
      */
     public function getChatMemberCount(string|int|null $chatId = null): array
@@ -308,9 +300,9 @@ class TelegramProvider extends AbstractProvider
     /**
      * Set webhook URL for receiving updates.
      *
-     * @param string $url
-     * @param array<string, mixed> $options
+     * @param  array<string, mixed>  $options
      * @return array{success: bool, error?: string}
+     *
      * @throws NotificationException
      */
     public function setWebhook(string $url, array $options = []): array
@@ -340,6 +332,7 @@ class TelegramProvider extends AbstractProvider
      * Delete webhook.
      *
      * @return array{success: bool, error?: string}
+     *
      * @throws NotificationException
      */
     public function deleteWebhook(): array
@@ -362,6 +355,7 @@ class TelegramProvider extends AbstractProvider
      * Get current webhook info.
      *
      * @return array{success: bool, webhook?: array<string, mixed>, error?: string}
+     *
      * @throws NotificationException
      */
     public function getWebhookInfo(): array
