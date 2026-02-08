@@ -4,21 +4,22 @@ declare(strict_types=1);
 
 namespace Mortogo321\LaravelNotify\Providers;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\Http;
 use Mortogo321\LaravelNotify\Contracts\NotificationProvider;
 use Mortogo321\LaravelNotify\Exceptions\NotificationException;
 
 abstract class AbstractProvider implements NotificationProvider
 {
-    protected Client $client;
-
     /**
      * @var array<string, mixed>
      */
     protected array $config;
 
     protected string $name;
+
+    protected int $timeout;
+
+    protected bool $verifySsl;
 
     /**
      * Create a new provider instance.
@@ -28,10 +29,8 @@ abstract class AbstractProvider implements NotificationProvider
     public function __construct(array $config = [])
     {
         $this->config = $config;
-        $this->client = new Client([
-            'timeout' => $config['timeout'] ?? 30,
-            'verify' => $config['verify_ssl'] ?? true,
-        ]);
+        $this->timeout = $config['timeout'] ?? 30;
+        $this->verifySsl = $config['verify_ssl'] ?? true;
     }
 
     /**
@@ -98,16 +97,6 @@ abstract class AbstractProvider implements NotificationProvider
     }
 
     /**
-     * Handle a Guzzle exception.
-     *
-     * @throws NotificationException
-     */
-    protected function handleGuzzleException(GuzzleException $e): never
-    {
-        throw NotificationException::sendFailed($this->name, $e->getMessage(), $e);
-    }
-
-    /**
      * Make an HTTP POST request.
      *
      * @param  array<string, mixed>  $payload
@@ -118,20 +107,45 @@ abstract class AbstractProvider implements NotificationProvider
     protected function post(string $url, array $payload): array
     {
         try {
-            $response = $this->client->post($url, [
-                'json' => array_filter($payload, fn ($value) => $value !== null),
-            ]);
-
-            $body = (string) $response->getBody();
-            $decoded = json_decode($body, true);
+            $response = Http::timeout($this->timeout)
+                ->withOptions(['verify' => $this->verifySsl])
+                ->asJson()
+                ->post($url, array_filter($payload, fn ($value) => $value !== null));
 
             return [
                 'success' => true,
-                'status_code' => $response->getStatusCode(),
-                'response' => $decoded ?? $body,
+                'status_code' => $response->status(),
+                'response' => $response->json() ?? $response->body(),
             ];
-        } catch (GuzzleException $e) {
-            $this->handleGuzzleException($e);
+        } catch (\Exception $e) {
+            throw NotificationException::sendFailed($this->name, $e->getMessage(), $e);
+        }
+    }
+
+    /**
+     * Make an HTTP GET request.
+     *
+     * @param  array<string, mixed>  $query
+     * @param  array<string, string>  $headers
+     * @return array<string, mixed>
+     *
+     * @throws NotificationException
+     */
+    protected function get(string $url, array $query = [], array $headers = []): array
+    {
+        try {
+            $request = Http::timeout($this->timeout)
+                ->withOptions(['verify' => $this->verifySsl]);
+
+            if ($headers) {
+                $request = $request->withHeaders($headers);
+            }
+
+            $response = $request->get($url, $query);
+
+            return $response->json() ?? [];
+        } catch (\Exception $e) {
+            throw NotificationException::sendFailed($this->name, $e->getMessage(), $e);
         }
     }
 }

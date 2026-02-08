@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mortogo321\LaravelNotify\Providers;
 
-use GuzzleHttp\Exception\GuzzleException;
 use Mortogo321\LaravelNotify\Exceptions\NotificationException;
 
 class TelegramProvider extends AbstractProvider
@@ -114,25 +113,19 @@ class TelegramProvider extends AbstractProvider
      */
     public function getMe(): array
     {
-        try {
-            $response = $this->client->get($this->buildApiUrl('getMe'));
+        $result = $this->get($this->buildApiUrl('getMe'));
 
-            $result = json_decode((string) $response->getBody(), true);
-
-            if (! ($result['ok'] ?? false)) {
-                return [
-                    'success' => false,
-                    'error' => $result['description'] ?? 'Unknown error',
-                ];
-            }
-
+        if (! ($result['ok'] ?? false)) {
             return [
-                'success' => true,
-                'bot' => $result['result'],
+                'success' => false,
+                'error' => $result['description'] ?? 'Unknown error',
             ];
-        } catch (GuzzleException $e) {
-            throw NotificationException::sendFailed($this->name, $e->getMessage(), $e);
         }
+
+        return [
+            'success' => true,
+            'bot' => $result['result'],
+        ];
     }
 
     /**
@@ -146,27 +139,19 @@ class TelegramProvider extends AbstractProvider
     {
         $chatId = $chatId ?? $this->getConfig('chat_id');
 
-        try {
-            $response = $this->client->get($this->buildApiUrl('getChat'), [
-                'query' => ['chat_id' => $chatId],
-            ]);
+        $result = $this->get($this->buildApiUrl('getChat'), ['chat_id' => $chatId]);
 
-            $result = json_decode((string) $response->getBody(), true);
-
-            if (! ($result['ok'] ?? false)) {
-                return [
-                    'success' => false,
-                    'error' => $result['description'] ?? 'Unknown error',
-                ];
-            }
-
+        if (! ($result['ok'] ?? false)) {
             return [
-                'success' => true,
-                'chat' => $result['result'],
+                'success' => false,
+                'error' => $result['description'] ?? 'Unknown error',
             ];
-        } catch (GuzzleException $e) {
-            throw NotificationException::sendFailed($this->name, $e->getMessage(), $e);
         }
+
+        return [
+            'success' => true,
+            'chat' => $result['result'],
+        ];
     }
 
     /**
@@ -179,54 +164,46 @@ class TelegramProvider extends AbstractProvider
      */
     public function getUpdates(array $options = []): array
     {
-        try {
-            $response = $this->client->get($this->buildApiUrl('getUpdates'), [
-                'query' => array_filter([
-                    'offset' => $options['offset'] ?? null,
-                    'limit' => $options['limit'] ?? 100,
-                    'timeout' => $options['timeout'] ?? 0,
-                ]),
-            ]);
+        $result = $this->get($this->buildApiUrl('getUpdates'), array_filter([
+            'offset' => $options['offset'] ?? null,
+            'limit' => $options['limit'] ?? 100,
+            'timeout' => $options['timeout'] ?? 0,
+        ]));
 
-            $result = json_decode((string) $response->getBody(), true);
+        if (! ($result['ok'] ?? false)) {
+            return [
+                'success' => false,
+                'error' => $result['description'] ?? 'Unknown error',
+            ];
+        }
 
-            if (! ($result['ok'] ?? false)) {
-                return [
-                    'success' => false,
-                    'error' => $result['description'] ?? 'Unknown error',
-                ];
-            }
+        $updates = $result['result'] ?? [];
+        $chats = [];
 
-            $updates = $result['result'] ?? [];
-            $chats = [];
+        foreach ($updates as $update) {
+            $message = $update['message'] ?? $update['channel_post'] ?? null;
 
-            foreach ($updates as $update) {
-                $message = $update['message'] ?? $update['channel_post'] ?? null;
+            if ($message && isset($message['chat'])) {
+                $chat = $message['chat'];
+                $chatId = $chat['id'];
 
-                if ($message && isset($message['chat'])) {
-                    $chat = $message['chat'];
-                    $chatId = $chat['id'];
-
-                    if (! isset($chats[$chatId])) {
-                        $chats[$chatId] = [
-                            'id' => $chatId,
-                            'type' => $chat['type'],
-                            'title' => $chat['title'] ?? null,
-                            'username' => $chat['username'] ?? null,
-                            'first_name' => $chat['first_name'] ?? null,
-                        ];
-                    }
+                if (! isset($chats[$chatId])) {
+                    $chats[$chatId] = [
+                        'id' => $chatId,
+                        'type' => $chat['type'],
+                        'title' => $chat['title'] ?? null,
+                        'username' => $chat['username'] ?? null,
+                        'first_name' => $chat['first_name'] ?? null,
+                    ];
                 }
             }
-
-            return [
-                'success' => true,
-                'updates' => $updates,
-                'chats' => array_values($chats),
-            ];
-        } catch (GuzzleException $e) {
-            throw NotificationException::sendFailed($this->name, $e->getMessage(), $e);
         }
+
+        return [
+            'success' => true,
+            'updates' => $updates,
+            'chats' => array_values($chats),
+        ];
     }
 
     /**
@@ -240,27 +217,19 @@ class TelegramProvider extends AbstractProvider
     {
         $chatId = $chatId ?? $this->getConfig('chat_id');
 
-        try {
-            $response = $this->client->get($this->buildApiUrl('getChatAdministrators'), [
-                'query' => ['chat_id' => $chatId],
-            ]);
+        $result = $this->get($this->buildApiUrl('getChatAdministrators'), ['chat_id' => $chatId]);
 
-            $result = json_decode((string) $response->getBody(), true);
-
-            if (! ($result['ok'] ?? false)) {
-                return [
-                    'success' => false,
-                    'error' => $result['description'] ?? 'Unknown error',
-                ];
-            }
-
+        if (! ($result['ok'] ?? false)) {
             return [
-                'success' => true,
-                'administrators' => $result['result'],
+                'success' => false,
+                'error' => $result['description'] ?? 'Unknown error',
             ];
-        } catch (GuzzleException $e) {
-            throw NotificationException::sendFailed($this->name, $e->getMessage(), $e);
         }
+
+        return [
+            'success' => true,
+            'administrators' => $result['result'],
+        ];
     }
 
     /**
@@ -274,27 +243,19 @@ class TelegramProvider extends AbstractProvider
     {
         $chatId = $chatId ?? $this->getConfig('chat_id');
 
-        try {
-            $response = $this->client->get($this->buildApiUrl('getChatMemberCount'), [
-                'query' => ['chat_id' => $chatId],
-            ]);
+        $result = $this->get($this->buildApiUrl('getChatMemberCount'), ['chat_id' => $chatId]);
 
-            $result = json_decode((string) $response->getBody(), true);
-
-            if (! ($result['ok'] ?? false)) {
-                return [
-                    'success' => false,
-                    'error' => $result['description'] ?? 'Unknown error',
-                ];
-            }
-
+        if (! ($result['ok'] ?? false)) {
             return [
-                'success' => true,
-                'count' => $result['result'],
+                'success' => false,
+                'error' => $result['description'] ?? 'Unknown error',
             ];
-        } catch (GuzzleException $e) {
-            throw NotificationException::sendFailed($this->name, $e->getMessage(), $e);
         }
+
+        return [
+            'success' => true,
+            'count' => $result['result'],
+        ];
     }
 
     /**
@@ -307,25 +268,19 @@ class TelegramProvider extends AbstractProvider
      */
     public function setWebhook(string $url, array $options = []): array
     {
-        try {
-            $response = $this->client->post($this->buildApiUrl('setWebhook'), [
-                'json' => array_filter([
-                    'url' => $url,
-                    'max_connections' => $options['max_connections'] ?? null,
-                    'allowed_updates' => $options['allowed_updates'] ?? null,
-                    'secret_token' => $options['secret_token'] ?? null,
-                ]),
-            ]);
+        $result = $this->post($this->buildApiUrl('setWebhook'), array_filter([
+            'url' => $url,
+            'max_connections' => $options['max_connections'] ?? null,
+            'allowed_updates' => $options['allowed_updates'] ?? null,
+            'secret_token' => $options['secret_token'] ?? null,
+        ]));
 
-            $result = json_decode((string) $response->getBody(), true);
+        $response = $result['response'] ?? [];
 
-            return [
-                'success' => $result['ok'] ?? false,
-                'error' => $result['description'] ?? null,
-            ];
-        } catch (GuzzleException $e) {
-            throw NotificationException::sendFailed($this->name, $e->getMessage(), $e);
-        }
+        return [
+            'success' => $response['ok'] ?? false,
+            'error' => $response['description'] ?? null,
+        ];
     }
 
     /**
@@ -337,18 +292,14 @@ class TelegramProvider extends AbstractProvider
      */
     public function deleteWebhook(): array
     {
-        try {
-            $response = $this->client->post($this->buildApiUrl('deleteWebhook'));
+        $result = $this->post($this->buildApiUrl('deleteWebhook'), []);
 
-            $result = json_decode((string) $response->getBody(), true);
+        $response = $result['response'] ?? [];
 
-            return [
-                'success' => $result['ok'] ?? false,
-                'error' => $result['description'] ?? null,
-            ];
-        } catch (GuzzleException $e) {
-            throw NotificationException::sendFailed($this->name, $e->getMessage(), $e);
-        }
+        return [
+            'success' => $response['ok'] ?? false,
+            'error' => $response['description'] ?? null,
+        ];
     }
 
     /**
@@ -360,24 +311,18 @@ class TelegramProvider extends AbstractProvider
      */
     public function getWebhookInfo(): array
     {
-        try {
-            $response = $this->client->get($this->buildApiUrl('getWebhookInfo'));
+        $result = $this->get($this->buildApiUrl('getWebhookInfo'));
 
-            $result = json_decode((string) $response->getBody(), true);
-
-            if (! ($result['ok'] ?? false)) {
-                return [
-                    'success' => false,
-                    'error' => $result['description'] ?? 'Unknown error',
-                ];
-            }
-
+        if (! ($result['ok'] ?? false)) {
             return [
-                'success' => true,
-                'webhook' => $result['result'],
+                'success' => false,
+                'error' => $result['description'] ?? 'Unknown error',
             ];
-        } catch (GuzzleException $e) {
-            throw NotificationException::sendFailed($this->name, $e->getMessage(), $e);
         }
+
+        return [
+            'success' => true,
+            'webhook' => $result['result'],
+        ];
     }
 }

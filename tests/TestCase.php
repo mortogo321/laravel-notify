@@ -79,6 +79,12 @@ abstract class TestCase extends Orchestra
                     'timeout' => 30,
                     'verify_ssl' => true,
                 ],
+                'line' => [
+                    'enabled' => true,
+                    'access_token' => 'test-line-access-token-1234567890',
+                    'timeout' => 30,
+                    'verify_ssl' => true,
+                ],
                 'email' => [
                     'enabled' => true,
                     'to' => 'test@example.com',

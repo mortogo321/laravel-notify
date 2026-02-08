@@ -8,6 +8,7 @@ use Mortogo321\LaravelNotify\Contracts\NotificationProvider;
 use Mortogo321\LaravelNotify\Exceptions\ProviderNotFoundException;
 use Mortogo321\LaravelNotify\Providers\DiscordProvider;
 use Mortogo321\LaravelNotify\Providers\EmailProvider;
+use Mortogo321\LaravelNotify\Providers\LineProvider;
 use Mortogo321\LaravelNotify\Providers\SlackProvider;
 use Mortogo321\LaravelNotify\Providers\TelegramProvider;
 
@@ -41,6 +42,7 @@ class NotifyManager
         'slack' => SlackProvider::class,
         'discord' => DiscordProvider::class,
         'telegram' => TelegramProvider::class,
+        'line' => LineProvider::class,
         'email' => EmailProvider::class,
     ];
 

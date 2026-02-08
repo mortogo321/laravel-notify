@@ -6,23 +6,23 @@
 [![GitHub License](https://img.shields.io/github/license/mortogo321/laravel-notify.svg?style=flat-square)](https://github.com/mortogo321/laravel-notify/blob/main/LICENSE.md)
 [![PHP Version](https://img.shields.io/packagist/php-v/mortogo321/laravel-notify.svg?style=flat-square)](https://packagist.org/packages/mortogo321/laravel-notify)
 
-A flexible Laravel package for sending notifications and alerts to multiple providers including Slack, Discord, Telegram, and Email.
+A flexible Laravel package for sending notifications and alerts to multiple providers including Slack, Discord, Telegram, LINE Notify, and Email.
 
 ## Features
 
-- **Multiple Providers**: Support for Slack, Discord, Telegram, and Email notifications
+- **Multiple Providers**: Support for Slack, Discord, Telegram, LINE Notify, and Email notifications
 - **Easy Provider Switching**: Seamlessly switch between providers with a simple API
 - **Send to Multiple Providers**: Broadcast notifications to multiple providers at once
 - **Channel/Group Helpers**: Built-in methods to list channels, get chat IDs, and more
 - **Highly Configurable**: Customize each provider with extensive options
 - **Extensible Architecture**: Easily add custom notification providers
 - **Facade Support**: Clean and intuitive facade for easy integration
-- **Type-Safe**: Built with modern PHP 8.1+ strict types
+- **Type-Safe**: Built with modern PHP 8.2+ strict types
 
 ## Requirements
 
-- PHP 8.1, 8.2, 8.3, or 8.4
-- Laravel 10.x, 11.x, or 12.x
+- PHP 8.2, 8.3, or 8.4
+- Laravel 11.x or 12.x
 
 ## Installation
 
@@ -63,6 +63,10 @@ NOTIFY_TELEGRAM_BOT_TOKEN=your-bot-token
 NOTIFY_TELEGRAM_CHAT_ID=your-chat-id
 NOTIFY_TELEGRAM_PARSE_MODE=HTML
 
+# LINE Notify Configuration
+NOTIFY_LINE_ENABLED=true
+NOTIFY_LINE_ACCESS_TOKEN=your-line-notify-access-token
+
 # Email Configuration
 NOTIFY_EMAIL_ENABLED=true
 NOTIFY_EMAIL_TO=admin@example.com
@@ -78,6 +82,8 @@ NOTIFY_EMAIL_SUBJECT="Laravel Notification"
 **Discord**: Server Settings > Integrations > Webhooks > New Webhook
 
 **Telegram**: Message `@BotFather` on Telegram, create a bot, then use the helper methods below to get your chat ID
+
+**LINE Notify**: Generate a personal access token at https://notify-bot.line.me/my/
 
 **Email**: Uses Laravel's built-in mail system (configure in `config/mail.php`)
 
@@ -106,6 +112,9 @@ Notify::provider('discord')->send('New user registered!');
 // Send to Telegram
 Notify::provider('telegram')->send('Server CPU usage is high!');
 
+// Send to LINE Notify
+Notify::provider('line')->send('Daily report is ready.');
+
 // Send to Email
 Notify::provider('email')->send('Monthly report is ready.');
 ```
@@ -114,7 +123,7 @@ Notify::provider('email')->send('Monthly report is ready.');
 
 ```php
 $result = Notify::sendToMultiple(
-    ['slack', 'discord', 'telegram'],
+    ['slack', 'discord', 'telegram', 'line'],
     'Critical: Database backup failed!'
 );
 
@@ -122,7 +131,8 @@ $result = Notify::sendToMultiple(
 // [
 //     'slack' => ['success' => true, ...],
 //     'discord' => ['success' => true, ...],
-//     'telegram' => ['success' => false, 'error' => '...']
+//     'telegram' => ['success' => false, 'error' => '...'],
+//     'line' => ['success' => true, ...],
 // ]
 ```
 
@@ -135,7 +145,7 @@ if (Notify::hasProvider('slack')) {
 }
 
 // Get all registered providers
-$providers = Notify::getProviders(); // ['slack', 'discord', 'telegram', 'email']
+$providers = Notify::getProviders(); // ['slack', 'discord', 'telegram', 'line', 'email']
 
 // Get/set default provider
 $default = Notify::getDefaultProvider(); // 'slack'
@@ -281,6 +291,24 @@ $telegram->deleteWebhook();
 $webhookInfo = $telegram->getWebhookInfo();
 ```
 
+### LINE Notify Helpers
+
+```php
+$line = Notify::provider('line');
+
+// Get masked access token
+$token = $line->getAccessToken();  // 'test-****67890'
+
+// Check API status
+$status = $line->getStatus();
+// [
+//     'success' => true,
+//     'status' => 200,
+//     'target_type' => 'USER',
+//     'target' => 'John Doe',
+// ]
+```
+
 ### Email Helpers
 
 ```php
@@ -415,6 +443,24 @@ Notify::provider('telegram')->send('<b>Alert!</b> Server CPU usage is at 90%', [
             ]
         ]
     ]
+]);
+```
+
+### LINE Notify with Sticker
+
+```php
+Notify::provider('line')->send('Deployment completed!', [
+    'stickerPackageId' => 446,
+    'stickerId' => 1988,
+]);
+```
+
+### LINE Notify with Image
+
+```php
+Notify::provider('line')->send('Check this chart:', [
+    'imageThumbnail' => 'https://example.com/chart-thumb.png',
+    'imageFullsize' => 'https://example.com/chart-full.png',
 ]);
 ```
 
@@ -639,6 +685,12 @@ All providers implement these methods:
 | `deleteWebhook()` | Delete webhook |
 | `getWebhookInfo()` | Get webhook info |
 
+#### LINE Notify
+| Method | Description |
+|--------|-------------|
+| `getAccessToken()` | Get masked access token |
+| `getStatus()` | Get LINE Notify API status |
+
 #### Email
 | Method | Description |
 |--------|-------------|
@@ -650,6 +702,15 @@ All providers implement these methods:
 | `getBcc()` | Get configured BCC recipients |
 | `validateEmail(string $email)` | Validate an email address |
 | `validateEmails(array $emails)` | Validate multiple emails |
+
+## Upgrading
+
+### From v1.x to v2.0
+
+- **PHP 8.2+ required**: Update your PHP version if running 8.1
+- **Laravel 11+ required**: Update Laravel if running 10.x
+- **Guzzle removed**: If you relied on `$this->client` (Guzzle Client) in custom providers, switch to `$this->post()` and `$this->get()` helpers or use the `Http` facade directly
+- **New `get()` helper**: `AbstractProvider` now provides a `get()` method for HTTP GET requests
 
 ## Testing
 
@@ -706,6 +767,13 @@ The following features are planned for future releases:
 3. Send a message to the group
 4. Use the helper: `Notify::provider('telegram')->getUpdates()`
 5. Find your chat ID in the `chats` array
+
+### Getting LINE Notify Token
+
+1. Go to https://notify-bot.line.me/my/
+2. Click "Generate token"
+3. Select a chat room to receive notifications
+4. Copy the generated token to your `.env` file
 
 ## Security
 

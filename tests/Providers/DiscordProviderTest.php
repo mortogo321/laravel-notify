@@ -7,6 +7,7 @@ namespace Mortogo321\LaravelNotify\Tests\Providers;
 use Mortogo321\LaravelNotify\Exceptions\NotificationException;
 use Mortogo321\LaravelNotify\Providers\DiscordProvider;
 use Mortogo321\LaravelNotify\Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class DiscordProviderTest extends TestCase
 {
@@ -26,14 +27,14 @@ class DiscordProviderTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_instantiated(): void
     {
         $this->assertInstanceOf(DiscordProvider::class, $this->provider);
         $this->assertEquals('discord', $this->provider->getName());
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_webhook_url_is_missing(): void
     {
         $this->expectException(NotificationException::class);
@@ -42,7 +43,7 @@ class DiscordProviderTest extends TestCase
         new DiscordProvider(['enabled' => true]);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_disabled_response_when_disabled(): void
     {
         $provider = new DiscordProvider([
@@ -56,7 +57,7 @@ class DiscordProviderTest extends TestCase
         $this->assertStringContainsString('disabled', $result['message']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_masked_webhook_url(): void
     {
         $maskedUrl = $this->provider->getWebhookUrl();
@@ -65,25 +66,25 @@ class DiscordProviderTest extends TestCase
         $this->assertStringNotContainsString('abcdefghijklmnopqrstuvwxyz', $maskedUrl);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_username(): void
     {
         $this->assertEquals('Test Bot', $this->provider->getUsername());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_avatar_url(): void
     {
         $this->assertEquals('https://example.com/avatar.png', $this->provider->getAvatarUrl());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_webhook_id(): void
     {
         $this->assertEquals('123456789012345678', $this->provider->getWebhookId());
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_null_webhook_id_for_invalid_url(): void
     {
         $provider = new DiscordProvider([
@@ -93,7 +94,7 @@ class DiscordProviderTest extends TestCase
         $this->assertNull($provider->getWebhookId());
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_default_values_when_not_configured(): void
     {
         $provider = new DiscordProvider([
@@ -104,7 +105,7 @@ class DiscordProviderTest extends TestCase
         $this->assertNull($provider->getAvatarUrl());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_check_enabled_status(): void
     {
         $this->assertTrue($this->provider->isEnabled());

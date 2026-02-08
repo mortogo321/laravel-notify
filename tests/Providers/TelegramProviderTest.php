@@ -7,6 +7,7 @@ namespace Mortogo321\LaravelNotify\Tests\Providers;
 use Mortogo321\LaravelNotify\Exceptions\NotificationException;
 use Mortogo321\LaravelNotify\Providers\TelegramProvider;
 use Mortogo321\LaravelNotify\Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class TelegramProviderTest extends TestCase
 {
@@ -28,14 +29,14 @@ class TelegramProviderTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_instantiated(): void
     {
         $this->assertInstanceOf(TelegramProvider::class, $this->provider);
         $this->assertEquals('telegram', $this->provider->getName());
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_bot_token_is_missing(): void
     {
         $this->expectException(NotificationException::class);
@@ -47,7 +48,7 @@ class TelegramProviderTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_chat_id_is_missing(): void
     {
         $this->expectException(NotificationException::class);
@@ -59,7 +60,7 @@ class TelegramProviderTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_disabled_response_when_disabled(): void
     {
         $provider = new TelegramProvider([
@@ -74,13 +75,13 @@ class TelegramProviderTest extends TestCase
         $this->assertStringContainsString('disabled', $result['message']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_chat_id(): void
     {
         $this->assertEquals('-1001234567890', $this->provider->getChatId());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_masked_bot_token(): void
     {
         $maskedToken = $this->provider->getBotToken();
@@ -90,13 +91,13 @@ class TelegramProviderTest extends TestCase
         $this->assertStringNotContainsString('ABCDefGHIjklMNOpqrsTUVwxyz', $maskedToken);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_parse_mode(): void
     {
         $this->assertEquals('HTML', $this->provider->getParseMode());
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_default_values_when_not_configured(): void
     {
         $provider = new TelegramProvider([
@@ -107,7 +108,7 @@ class TelegramProviderTest extends TestCase
         $this->assertEquals('HTML', $provider->getParseMode());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_check_enabled_status(): void
     {
         $this->assertTrue($this->provider->isEnabled());
@@ -121,7 +122,7 @@ class TelegramProviderTest extends TestCase
         $this->assertFalse($disabledProvider->isEnabled());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_all_config(): void
     {
         $config = $this->provider->getAllConfig();

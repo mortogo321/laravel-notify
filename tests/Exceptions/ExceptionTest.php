@@ -8,10 +8,11 @@ use Exception;
 use Mortogo321\LaravelNotify\Exceptions\NotificationException;
 use Mortogo321\LaravelNotify\Exceptions\ProviderNotFoundException;
 use Mortogo321\LaravelNotify\Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class ExceptionTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function notification_exception_can_be_created(): void
     {
         $exception = new NotificationException('Test error');
@@ -19,7 +20,7 @@ class ExceptionTest extends TestCase
         $this->assertEquals('Test error', $exception->getMessage());
     }
 
-    /** @test */
+    #[Test]
     public function notification_exception_can_set_provider(): void
     {
         $exception = new NotificationException('Test error');
@@ -28,7 +29,7 @@ class ExceptionTest extends TestCase
         $this->assertEquals('slack', $exception->getProvider());
     }
 
-    /** @test */
+    #[Test]
     public function notification_exception_can_set_context(): void
     {
         $exception = new NotificationException('Test error');
@@ -37,7 +38,7 @@ class ExceptionTest extends TestCase
         $this->assertEquals(['key' => 'value'], $exception->getContext());
     }
 
-    /** @test */
+    #[Test]
     public function notification_exception_send_failed_factory(): void
     {
         $previous = new Exception('Original error');
@@ -48,7 +49,7 @@ class ExceptionTest extends TestCase
         $this->assertSame($previous, $exception->getPrevious());
     }
 
-    /** @test */
+    #[Test]
     public function notification_exception_missing_config_factory(): void
     {
         $exception = NotificationException::missingConfig('telegram', 'bot_token');
@@ -57,7 +58,7 @@ class ExceptionTest extends TestCase
         $this->assertEquals('telegram', $exception->getProvider());
     }
 
-    /** @test */
+    #[Test]
     public function provider_not_found_exception_make_factory(): void
     {
         $exception = ProviderNotFoundException::make('custom');
@@ -66,7 +67,7 @@ class ExceptionTest extends TestCase
         $this->assertEquals('custom', $exception->getProvider());
     }
 
-    /** @test */
+    #[Test]
     public function provider_not_found_exception_no_default_factory(): void
     {
         $exception = ProviderNotFoundException::noDefault();

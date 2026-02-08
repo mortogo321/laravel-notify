@@ -9,12 +9,14 @@ use Mortogo321\LaravelNotify\Facades\Notify;
 use Mortogo321\LaravelNotify\NotifyManager;
 use Mortogo321\LaravelNotify\Providers\DiscordProvider;
 use Mortogo321\LaravelNotify\Providers\EmailProvider;
+use Mortogo321\LaravelNotify\Providers\LineProvider;
 use Mortogo321\LaravelNotify\Providers\SlackProvider;
 use Mortogo321\LaravelNotify\Providers\TelegramProvider;
+use PHPUnit\Framework\Attributes\Test;
 
 class NotifyManagerTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function it_can_get_available_providers(): void
     {
         $providers = Notify::getProviders();
@@ -23,10 +25,11 @@ class NotifyManagerTest extends TestCase
         $this->assertContains('slack', $providers);
         $this->assertContains('discord', $providers);
         $this->assertContains('telegram', $providers);
+        $this->assertContains('line', $providers);
         $this->assertContains('email', $providers);
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_provider_not_found(): void
     {
         $this->expectException(ProviderNotFoundException::class);
@@ -35,7 +38,7 @@ class NotifyManagerTest extends TestCase
         Notify::provider('non_existent_provider');
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_no_default_provider_set(): void
     {
         config(['notify.default' => null]);
@@ -48,21 +51,23 @@ class NotifyManagerTest extends TestCase
         $manager->send('Test message');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_provider_instance(): void
     {
         $slack = Notify::provider('slack');
         $discord = Notify::provider('discord');
         $telegram = Notify::provider('telegram');
+        $line = Notify::provider('line');
         $email = Notify::provider('email');
 
         $this->assertInstanceOf(SlackProvider::class, $slack);
         $this->assertInstanceOf(DiscordProvider::class, $discord);
         $this->assertInstanceOf(TelegramProvider::class, $telegram);
+        $this->assertInstanceOf(LineProvider::class, $line);
         $this->assertInstanceOf(EmailProvider::class, $email);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_default_provider(): void
     {
         $provider = Notify::provider();
@@ -71,15 +76,16 @@ class NotifyManagerTest extends TestCase
         $this->assertEquals('slack', $provider->getName());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_check_if_provider_exists(): void
     {
         $this->assertTrue(Notify::hasProvider('slack'));
         $this->assertTrue(Notify::hasProvider('discord'));
+        $this->assertTrue(Notify::hasProvider('line'));
         $this->assertFalse(Notify::hasProvider('non_existent'));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_and_set_default_provider(): void
     {
         $this->assertEquals('slack', Notify::getDefaultProvider());
@@ -91,7 +97,7 @@ class NotifyManagerTest extends TestCase
         $this->assertInstanceOf(DiscordProvider::class, $provider);
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_setting_invalid_default_provider(): void
     {
         $this->expectException(ProviderNotFoundException::class);
@@ -99,7 +105,7 @@ class NotifyManagerTest extends TestCase
         Notify::setDefaultProvider('non_existent');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_extend_with_custom_provider(): void
     {
         $customProvider = new class(['enabled' => true, 'webhook_url' => 'https://test.com']) extends SlackProvider
@@ -113,7 +119,7 @@ class NotifyManagerTest extends TestCase
         $this->assertEquals('custom', Notify::provider('custom')->getName());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_config(): void
     {
         $config = Notify::getConfig();
@@ -129,7 +135,7 @@ class NotifyManagerTest extends TestCase
         $this->assertEquals('fallback', $nonExistent);
     }
 
-    /** @test */
+    #[Test]
     public function providers_report_correct_enabled_status(): void
     {
         $slack = Notify::provider('slack');
@@ -141,12 +147,13 @@ class NotifyManagerTest extends TestCase
         $this->assertFalse($slack->isEnabled());
     }
 
-    /** @test */
+    #[Test]
     public function providers_report_correct_name(): void
     {
         $this->assertEquals('slack', Notify::provider('slack')->getName());
         $this->assertEquals('discord', Notify::provider('discord')->getName());
         $this->assertEquals('telegram', Notify::provider('telegram')->getName());
+        $this->assertEquals('line', Notify::provider('line')->getName());
         $this->assertEquals('email', Notify::provider('email')->getName());
     }
 }

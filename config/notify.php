@@ -57,6 +57,13 @@ return [
             'verify_ssl' => true,
         ],
 
+        'line' => [
+            'enabled' => env('NOTIFY_LINE_ENABLED', false),
+            'access_token' => env('NOTIFY_LINE_ACCESS_TOKEN'),
+            'timeout' => 30,
+            'verify_ssl' => true,
+        ],
+
         'email' => [
             'enabled' => env('NOTIFY_EMAIL_ENABLED', false),
             'to' => env('NOTIFY_EMAIL_TO'),

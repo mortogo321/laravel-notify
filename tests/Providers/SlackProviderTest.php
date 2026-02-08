@@ -7,6 +7,7 @@ namespace Mortogo321\LaravelNotify\Tests\Providers;
 use Mortogo321\LaravelNotify\Exceptions\NotificationException;
 use Mortogo321\LaravelNotify\Providers\SlackProvider;
 use Mortogo321\LaravelNotify\Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class SlackProviderTest extends TestCase
 {
@@ -27,14 +28,14 @@ class SlackProviderTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_instantiated(): void
     {
         $this->assertInstanceOf(SlackProvider::class, $this->provider);
         $this->assertEquals('slack', $this->provider->getName());
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_webhook_url_is_missing(): void
     {
         $this->expectException(NotificationException::class);
@@ -43,7 +44,7 @@ class SlackProviderTest extends TestCase
         new SlackProvider(['enabled' => true]);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_disabled_response_when_disabled(): void
     {
         $provider = new SlackProvider([
@@ -57,13 +58,13 @@ class SlackProviderTest extends TestCase
         $this->assertStringContainsString('disabled', $result['message']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_channel(): void
     {
         $this->assertEquals('#test-channel', $this->provider->getChannel());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_masked_webhook_url(): void
     {
         $maskedUrl = $this->provider->getWebhookUrl();
@@ -72,19 +73,19 @@ class SlackProviderTest extends TestCase
         $this->assertStringNotContainsString('T12345', $maskedUrl);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_username(): void
     {
         $this->assertEquals('Test Bot', $this->provider->getUsername());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_icon_emoji(): void
     {
         $this->assertEquals(':robot:', $this->provider->getIconEmoji());
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_default_values_when_not_configured(): void
     {
         $provider = new SlackProvider([
@@ -96,7 +97,7 @@ class SlackProviderTest extends TestCase
         $this->assertNull($provider->getChannel());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_check_enabled_status(): void
     {
         $this->assertTrue($this->provider->isEnabled());
@@ -109,7 +110,7 @@ class SlackProviderTest extends TestCase
         $this->assertFalse($disabledProvider->isEnabled());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_all_config(): void
     {
         $config = $this->provider->getAllConfig();

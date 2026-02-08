@@ -7,6 +7,7 @@ namespace Mortogo321\LaravelNotify\Tests\Providers;
 use Mortogo321\LaravelNotify\Exceptions\NotificationException;
 use Mortogo321\LaravelNotify\Providers\EmailProvider;
 use Mortogo321\LaravelNotify\Tests\TestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class EmailProviderTest extends TestCase
 {
@@ -27,14 +28,14 @@ class EmailProviderTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_be_instantiated(): void
     {
         $this->assertInstanceOf(EmailProvider::class, $this->provider);
         $this->assertEquals('email', $this->provider->getName());
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_when_to_is_missing(): void
     {
         $this->expectException(NotificationException::class);
@@ -43,7 +44,7 @@ class EmailProviderTest extends TestCase
         new EmailProvider(['enabled' => true]);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_disabled_response_when_disabled(): void
     {
         $provider = new EmailProvider([
@@ -57,13 +58,13 @@ class EmailProviderTest extends TestCase
         $this->assertStringContainsString('disabled', $result['message']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_to_address(): void
     {
         $this->assertEquals('test@example.com', $this->provider->getTo());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_to_address_from_array(): void
     {
         $provider = new EmailProvider([
@@ -73,37 +74,37 @@ class EmailProviderTest extends TestCase
         $this->assertEquals('test1@example.com, test2@example.com', $provider->getTo());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_from_address(): void
     {
         $this->assertEquals('noreply@example.com', $this->provider->getFrom());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_from_name(): void
     {
         $this->assertEquals('Test App', $this->provider->getFromName());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_subject(): void
     {
         $this->assertEquals('Test Notification', $this->provider->getSubject());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_cc(): void
     {
         $this->assertEquals('cc@example.com', $this->provider->getCc());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_bcc(): void
     {
         $this->assertEquals('bcc@example.com', $this->provider->getBcc());
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_default_values_when_not_configured(): void
     {
         $provider = new EmailProvider([
@@ -117,7 +118,7 @@ class EmailProviderTest extends TestCase
         $this->assertNull($provider->getBcc());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_validate_email_address(): void
     {
         $this->assertTrue($this->provider->validateEmail('valid@example.com'));
@@ -127,7 +128,7 @@ class EmailProviderTest extends TestCase
         $this->assertFalse($this->provider->validateEmail('@example.com'));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_validate_multiple_email_addresses(): void
     {
         $result = $this->provider->validateEmails([
@@ -145,7 +146,7 @@ class EmailProviderTest extends TestCase
         $this->assertContains('bad@', $result['invalid']);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_check_enabled_status(): void
     {
         $this->assertTrue($this->provider->isEnabled());

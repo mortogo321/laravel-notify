@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mortogo321\LaravelNotify\Providers;
 
-use GuzzleHttp\Exception\GuzzleException;
 use Mortogo321\LaravelNotify\Exceptions\NotificationException;
 
 class SlackProvider extends AbstractProvider
@@ -116,42 +115,33 @@ class SlackProvider extends AbstractProvider
      */
     public function listChannels(string $botToken, array $options = []): array
     {
-        try {
-            $response = $this->client->get('https://slack.com/api/conversations.list', [
-                'headers' => [
-                    'Authorization' => "Bearer {$botToken}",
-                ],
-                'query' => array_filter([
-                    'types' => $options['types'] ?? 'public_channel,private_channel',
-                    'limit' => $options['limit'] ?? 100,
-                    'cursor' => $options['cursor'] ?? null,
-                ]),
-            ]);
+        $result = $this->get('https://slack.com/api/conversations.list', array_filter([
+            'types' => $options['types'] ?? 'public_channel,private_channel',
+            'limit' => $options['limit'] ?? 100,
+            'cursor' => $options['cursor'] ?? null,
+        ]), [
+            'Authorization' => "Bearer {$botToken}",
+        ]);
 
-            $result = json_decode((string) $response->getBody(), true);
-
-            if (! ($result['ok'] ?? false)) {
-                return [
-                    'success' => false,
-                    'error' => $result['error'] ?? 'Unknown error',
-                ];
-            }
-
-            $channels = array_map(fn ($channel) => [
-                'id' => $channel['id'],
-                'name' => $channel['name'],
-                'is_private' => $channel['is_private'] ?? false,
-                'num_members' => $channel['num_members'] ?? 0,
-            ], $result['channels'] ?? []);
-
+        if (! ($result['ok'] ?? false)) {
             return [
-                'success' => true,
-                'channels' => $channels,
-                'next_cursor' => $result['response_metadata']['next_cursor'] ?? null,
+                'success' => false,
+                'error' => $result['error'] ?? 'Unknown error',
             ];
-        } catch (GuzzleException $e) {
-            throw NotificationException::sendFailed($this->name, $e->getMessage(), $e);
         }
+
+        $channels = array_map(fn ($channel) => [
+            'id' => $channel['id'],
+            'name' => $channel['name'],
+            'is_private' => $channel['is_private'] ?? false,
+            'num_members' => $channel['num_members'] ?? 0,
+        ], $result['channels'] ?? []);
+
+        return [
+            'success' => true,
+            'channels' => $channels,
+            'next_cursor' => $result['response_metadata']['next_cursor'] ?? null,
+        ];
     }
 
     /**
@@ -164,31 +154,22 @@ class SlackProvider extends AbstractProvider
      */
     public function getChannelInfo(string $botToken, string $channelId): array
     {
-        try {
-            $response = $this->client->get('https://slack.com/api/conversations.info', [
-                'headers' => [
-                    'Authorization' => "Bearer {$botToken}",
-                ],
-                'query' => [
-                    'channel' => $channelId,
-                ],
-            ]);
+        $result = $this->get('https://slack.com/api/conversations.info', [
+            'channel' => $channelId,
+        ], [
+            'Authorization' => "Bearer {$botToken}",
+        ]);
 
-            $result = json_decode((string) $response->getBody(), true);
-
-            if (! ($result['ok'] ?? false)) {
-                return [
-                    'success' => false,
-                    'error' => $result['error'] ?? 'Unknown error',
-                ];
-            }
-
+        if (! ($result['ok'] ?? false)) {
             return [
-                'success' => true,
-                'channel' => $result['channel'],
+                'success' => false,
+                'error' => $result['error'] ?? 'Unknown error',
             ];
-        } catch (GuzzleException $e) {
-            throw NotificationException::sendFailed($this->name, $e->getMessage(), $e);
         }
+
+        return [
+            'success' => true,
+            'channel' => $result['channel'],
+        ];
     }
 }

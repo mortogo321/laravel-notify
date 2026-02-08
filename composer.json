@@ -1,7 +1,7 @@
 {
     "name": "mortogo321/laravel-notify",
     "description": "A Laravel package for sending notifications and alerts to multiple providers",
-    "version": "1.1.0",
+    "version": "2.0.0",
     "type": "library",
     "license": "MIT",
     "keywords": [
@@ -11,6 +11,7 @@
         "slack",
         "discord",
         "telegram",
+        "line",
         "email"
     ],
     "authors": [
@@ -20,15 +21,15 @@
         }
     ],
     "require": {
-        "php": "^8.1",
-        "illuminate/support": "^10.0|^11.0|^12.0",
-        "guzzlehttp/guzzle": "^7.0"
+        "php": "^8.2",
+        "illuminate/http": "^11.0|^12.0",
+        "illuminate/support": "^11.0|^12.0"
     },
     "require-dev": {
         "laravel/pint": "^1.0",
-        "orchestra/testbench": "^8.0|^9.0|^10.0",
+        "orchestra/testbench": "^9.0|^10.0",
         "phpstan/phpstan": "^1.10",
-        "phpunit/phpunit": "^10.0|^11.0"
+        "phpunit/phpunit": "^11.0|^12.0"
     },
     "autoload": {
         "psr-4": {

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Mortogo321\LaravelNotify\Providers;
 
-use GuzzleHttp\Exception\GuzzleException;
 use Mortogo321\LaravelNotify\Exceptions\NotificationException;
 
 class DiscordProvider extends AbstractProvider
@@ -119,24 +118,18 @@ class DiscordProvider extends AbstractProvider
      */
     public function getWebhookInfo(): array
     {
-        try {
-            $response = $this->client->get($this->getConfig('webhook_url'));
+        $result = $this->get($this->getConfig('webhook_url'));
 
-            $result = json_decode((string) $response->getBody(), true);
-
-            return [
-                'success' => true,
-                'webhook' => [
-                    'id' => $result['id'] ?? null,
-                    'name' => $result['name'] ?? null,
-                    'channel_id' => $result['channel_id'] ?? null,
-                    'guild_id' => $result['guild_id'] ?? null,
-                    'avatar' => $result['avatar'] ?? null,
-                ],
-            ];
-        } catch (GuzzleException $e) {
-            throw NotificationException::sendFailed($this->name, $e->getMessage(), $e);
-        }
+        return [
+            'success' => true,
+            'webhook' => [
+                'id' => $result['id'] ?? null,
+                'name' => $result['name'] ?? null,
+                'channel_id' => $result['channel_id'] ?? null,
+                'guild_id' => $result['guild_id'] ?? null,
+                'avatar' => $result['avatar'] ?? null,
+            ],
+        ];
     }
 
     /**
@@ -173,28 +166,20 @@ class DiscordProvider extends AbstractProvider
      */
     public function listGuildChannels(string $botToken, string $guildId): array
     {
-        try {
-            $response = $this->client->get("https://discord.com/api/v10/guilds/{$guildId}/channels", [
-                'headers' => [
-                    'Authorization' => "Bot {$botToken}",
-                ],
-            ]);
+        $result = $this->get("https://discord.com/api/v10/guilds/{$guildId}/channels", [], [
+            'Authorization' => "Bot {$botToken}",
+        ]);
 
-            $result = json_decode((string) $response->getBody(), true);
+        $channels = array_values(array_map(fn ($channel) => [
+            'id' => $channel['id'],
+            'name' => $channel['name'],
+            'type' => $channel['type'],
+            'position' => $channel['position'] ?? 0,
+        ], $result));
 
-            $channels = array_map(fn ($channel) => [
-                'id' => $channel['id'],
-                'name' => $channel['name'],
-                'type' => $channel['type'],
-                'position' => $channel['position'] ?? 0,
-            ], $result ?? []);
-
-            return [
-                'success' => true,
-                'channels' => $channels,
-            ];
-        } catch (GuzzleException $e) {
-            throw NotificationException::sendFailed($this->name, $e->getMessage(), $e);
-        }
+        return [
+            'success' => true,
+            'channels' => $channels,
+        ];
     }
 }
