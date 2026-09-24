@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Mortogo321\LaravelNotify\Tests;
 
+use Illuminate\Foundation\Application;
+use Mortogo321\LaravelNotify\Facades\Notify;
 use Mortogo321\LaravelNotify\NotifyServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
@@ -12,7 +14,7 @@ abstract class TestCase extends Orchestra
     /**
      * Get package providers.
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param  Application  $app
      * @return array<int, class-string>
      */
     protected function getPackageProviders($app): array
@@ -25,20 +27,20 @@ abstract class TestCase extends Orchestra
     /**
      * Get package aliases.
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param  Application  $app
      * @return array<string, class-string>
      */
     protected function getPackageAliases($app): array
     {
         return [
-            'Notify' => \Mortogo321\LaravelNotify\Facades\Notify::class,
+            'Notify' => Notify::class,
         ];
     }
 
     /**
      * Define environment setup.
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param  Application  $app
      */
     protected function getEnvironmentSetUp($app): void
     {
